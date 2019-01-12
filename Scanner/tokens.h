@@ -23,12 +23,12 @@ enum keywords {
 // Operators start from 50
 enum operators {
     // Relational
-    EQUAL = 50,
-    NEQUAL,
+    EQ = 50,
+    NEQ,
+    GT,
+    LT,
     GE,
     LE,
-    GEQ,
-    LEQ,
     EQEQ,
     // Arithmetic
     PLUS,
@@ -65,7 +65,18 @@ enum special_chars {
     CLOSE_SQR_BKT
 };
 
+enum preproc {
+    PREPROCES = 150,
+    DEF  
+};
+
 enum identifier {
-    IDENTIFIER = 200
+    IDENTIFIER = 200,
+    FUNC
+};
+
+
+enum CONSTANT {
+    CONST = 300
 };
  
