@@ -77,6 +77,12 @@ enum identifier {
 
 
 enum CONSTANT {
-    CONST = 300
+    INTEGER_CONSTANT = 250,
+    FLOATING_CONSTANT
+};
+
+enum COMMENTS {
+    SINGLE_LINE = 300,
+    MULTI_LINE
 };
  
