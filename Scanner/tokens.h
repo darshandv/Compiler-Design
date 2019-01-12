@@ -66,7 +66,7 @@ enum special_chars {
 };
 
 enum preproc {
-    PREPROCES = 150,
+    INCLUDE = 150,
     DEF  
 };
 
