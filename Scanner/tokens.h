@@ -56,6 +56,7 @@ enum operators {
 // Special Characters start at 100
 enum special_chars {
     COMMA =100,
+    SEMICOLON,
     FORWARD_SLASH,
     OPEN_PARANTHESIS,
     CLOSE_PARANTHESIS,
