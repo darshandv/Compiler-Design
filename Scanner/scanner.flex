@@ -23,12 +23,13 @@ DIGIT [0-9]
 IDENTIFIER {ALPHA}({ALPHA}|{DIGIT}|{UND})* 
 FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 
+%option yylineno
 
 /* Rules section */
 %%
 
  /* Single Line Comment */ 
-\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_LINE);yylineno++;}
+\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_LINE);}
 
 
  /* Include directives */
