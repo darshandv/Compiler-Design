@@ -31,35 +31,39 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 \/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_LINE);yylineno++;}
 
 
+ /* Include directives */
 #include{SPACE}*<{ALPHA}+\.h>[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
 #include{SPACE}*\"{ALPHA}+\"[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
 
+ /* Illegal include statements */ 
 #include{SPACE}*<{ALPHA}+\.h>{SPACE}*[;] { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal preprocessing detective. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 #include{SPACE}*\"{ALPHA}+\"{SPACE}*[;] { printf("\n%s%30s%30s%30s%d\n", RED, "Illegal preprocessing detective. Ended with semicolon at", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
-
+ /* #define statements */
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+({PLUS}|{NEG})?{DIGIT}*{DOT}{DIGIT}+[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "MACRO", yytext, "Line Number:", yylineno, "Token Number:",DEF );}
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{DIGIT}+[^;]                             { printf("\n%30s%30s%30s%d%30s%d\n", "MACRO", yytext, "Line Number:", yylineno, "Token Number:",DEF );}
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{ALPHA}({ALPHA}|{UND}|{DIGIT})*[^;]      { printf("\n%30s%30s%30s%d%30s%d\n", "MACRO", yytext, "Line Number:", yylineno, "Token Number:",DEF); }
 
+
+ /* Illegal #define statements */ 
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+({PLUS}|{NEG})?{DIGIT}*{DOT}{DIGIT}+{SPACE}*[;] { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal macro definition. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{DIGIT}+{SPACE}*[;]                             { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal macro definition. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{ALPHA}({ALPHA}|{UND}|{DIGIT})*{SPACE}*[;]      { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal macro definition. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
-
-"int"                   {printf("\n%30s%30s%30s%d%30s%d\n", "INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INT);}
-"short"                 {printf("\n%30s%30s%30s%d%30s%d\n", "SHORT INT", yytext, "Line Number:", yylineno, "Token Number:",SHORT );}
-"long"                  {printf("\n%30s%30s%30s%d%30s%d\n", "LONG INT", yytext, "Line Number:", yylineno, "Token Number:", LONG );}
-"long long"             {printf("\n%30s%30s%30s%d%30s%d\n", "LONG LONG INT", yytext, "Line Number:", yylineno, "Token Number:", LONG_LONG );}
-"signed"                {printf("\n%30s%30s%30s%d%30s%d\n", "SIGNED INT", yytext, "Line Number:", yylineno, "Token Number:", SIGNED );}
-"unsigned"              {printf("\n%30s%30s%30s%d%30s%d\n", "UNSIGNED INT", yytext, "Line Number:", yylineno, "Token Number:",UNSIGNED );}
-"char"                  {printf("\n%30s%30s%30s%d%30s%d\n", "CHAR", yytext, "Line Number:", yylineno, "Token Number:",CHAR );}
-"if"                    {printf("\n%30s%30s%30s%d%30s%d\n", "IF", yytext, "Line Number:", yylineno, "Token Number:",IF );}
-"else"                  {printf("\n%30s%30s%30s%d%30s%d\n", "ELSE", yytext, "Line Number:", yylineno, "Token Number:",ELSE );}
-"while"                 {printf("\n%30s%30s%30s%d%30s%d\n", "WHILE", yytext, "Line Number:", yylineno, "Token Number:",WHILE );}
-"continue"              {printf("\n%30s%30s%30s%d%30s%d\n", "CONTINUE", yytext, "Line Number:", yylineno, "Token Number:",CONTINUE );}
-"break"                 {printf("\n%30s%30s%30s%d%30s%d\n", "BREAK", yytext, "Line Number:", yylineno, "Token Number:",BREAK );}
-"return"                {printf("\n%30s%30s%30s%d%30s%d\n", "RETURN", yytext, "Line Number:", yylineno, "Token Number:",RETURN );}
+ /* Keywords */
+"int"                   {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: INTEGER DATA TYPE", yytext, "Line Number:", yylineno, "Token Number:",INT, NRML);}
+"short"                 {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: SHORT INT DATATYPE", yytext, "Line Number:", yylineno, "Token Number:",SHORT,NRML );}
+"long"                  {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: LONG INT DATATYPE", yytext, "Line Number:", yylineno, "Token Number:", LONG,NRML );}
+"long long"             {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: LONG LONG INT DATATYPE", yytext, "Line Number:", yylineno, "Token Number:", LONG_LONG,NRML );}
+"signed"                {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: SIGNED INT", yytext, "Line Number:", yylineno, "Token Number:", SIGNED,NRML );}
+"unsigned"              {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: UNSIGNED INT", yytext, "Line Number:", yylineno, "Token Number:",UNSIGNED,NRML );}
+"char"                  {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: CHAR DATATYPE", yytext, "Line Number:", yylineno, "Token Number:",CHAR,NRML );}
+"if"                    {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: IF", yytext, "Line Number:", yylineno, "Token Number:",IF,NRML );}
+"else"                  {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: ELSE", yytext, "Line Number:", yylineno, "Token Number:",ELSE,NRML );}
+"while"                 {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: WHILE", yytext, "Line Number:", yylineno, "Token Number:",WHILE,NRML );}
+"continue"              {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: CONTINUE", yytext, "Line Number:", yylineno, "Token Number:",CONTINUE,NRML );}
+"break"                 {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: BREAK", yytext, "Line Number:", yylineno, "Token Number:",BREAK,NRML );}
+"return"                {printf("\n%s%30s%30s%30s%d%30s%d%s\n",BLUE, "KEYWORD: RETURN", yytext, "Line Number:", yylineno, "Token Number:",RETURN,NRML );}
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
 0([x|X])({DIGIT}|[a-fA-F])+    {printf("\n%30s%30s%30s%d%30s%d\n", "HEXADECIMAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",HEXADECIMAL_CONSTANT );}
@@ -87,14 +91,14 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 
 
 
-
+ /* Shorthand assignment operators */
 "+="                {printf("\n%30s%30s%30s%d%30s%d\n", "PLUS EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",PLUSEQ );}  
 "-="                {printf("\n%30s%30s%30s%d%30s%d\n", "MINUS EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",MINUSEQ );}  
 "*="                {printf("\n%30s%30s%30s%d%30s%d\n", "MUL EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",MULEQ );}  
 "/="                {printf("\n%30s%30s%30s%d%30s%d\n", "DIV EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",DIVEQ );}  
 "%="                {printf("\n%30s%30s%30s%d%30s%d\n", "MOD EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",MODEQ);}  
 
-
+ /* Relational operators */
 "="                     {printf("\n%30s%30s%30s%d%30s%d\n", "EQUALTO", yytext, "Line Number:", yylineno, "Token Number:",EQ );}  
 "!="                    {printf("\n%30s%30s%30s%d%30s%d\n", "UNEQUAL", yytext, "Line Number:", yylineno, "Token Number:",NEQ );}  
 ">"                     {printf("\n%30s%30s%30s%d%30s%d\n", "GREATER THAN", yytext, "Line Number:", yylineno, "Token Number:",GT );}  
@@ -103,6 +107,7 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 "<="                    {printf("\n%30s%30s%30s%d%30s%d\n", "LESSER THAN EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",LE );}  
 "=="                    {printf("\n%30s%30s%30s%d%30s%d\n", "EQUAL TO EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",EQEQ );}  
 
+ /* Arithmetic Operators */
 "++"                    {printf("\n%30s%30s%30s%d%30s%d\n", "INCREMENT", yytext, "Line Number:", yylineno, "Token Number:",INC );}  
 "--"                    {printf("\n%30s%30s%30s%d%30s%d\n", "DECREMENT", yytext, "Line Number:", yylineno, "Token Number:",DEC );}  
 "+"                     {printf("\n%30s%30s%30s%d%30s%d\n", "PLUS", yytext, "Line Number:", yylineno, "Token Number:",PLUS );}  
@@ -112,10 +117,9 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 "%"                     {printf("\n%30s%30s%30s%d%30s%d\n", "MODULUS", yytext, "Line Number:", yylineno, "Token Number:",MODULO);}  
 
 
-
+ /* Punctuators */
 ","                 {printf("\n%30s%30s%30s%d%30s%d\n", "COMMA", yytext, "Line Number:", yylineno, "Token Number:",COMMA );}   
 ";"                 {printf("\n%30s%30s%30s%d%30s%d\n", "SEMICOLON", yytext, "Line Number:", yylineno, "Token Number:",SEMICOLON );} 
-
 "("                 {printf("\n%30s%30s%30s%d%30s%d\n", "OPEN PARANTHESIS", yytext, "Line Number:", yylineno, "Token Number:",OPEN_PARANTHESIS );} 
 ")"                 {printf("\n%30s%30s%30s%d%30s%d\n", "CLOSE PARANTHESIS", yytext, "Line Number:", yylineno, "Token Number:",CLOSE_PARANTHESIS );} 
 "{"                 {printf("\n%30s%30s%30s%d%30s%d\n", "OPEN_BRACE", yytext, "Line Number:", yylineno, "Token Number:",OPEN_BRACE );} 

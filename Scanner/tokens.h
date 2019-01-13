@@ -1,5 +1,6 @@
 /*
  * This file will contain the definition of all the tokens and their corresponding values used in our lexer.
+ * This is to increase readability and modularity of the code.
 */
 
 
@@ -66,23 +67,27 @@ enum special_chars {
     CLOSE_SQR_BKT
 };
 
+// Preprocessor directives start from 150
 enum preproc {
     INCLUDE = 150,
     DEF  
 };
 
+// Identifiers start from 200
 enum identifier {
     IDENTIFIER = 200,
     FUNC
 };
 
-
+// Constants start from 250
 enum CONSTANT {
     INTEGER_CONSTANT = 250,
     FLOATING_CONSTANT,
     HEXADECIMAL_CONSTANT
 };
 
+
+// Comments start from 300
 enum COMMENTS {
     SINGLE_LINE = 300,
     MULTI_LINE
