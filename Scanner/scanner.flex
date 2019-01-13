@@ -27,7 +27,8 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 /* Rules section */
 %%
 
-\/\/(.)*[\n]                {yylineno++;}
+ /* Single Line Comment */ 
+\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_LINE);yylineno++;}
 
 
 #include{SPACE}*<{ALPHA}+\.h>[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
@@ -45,6 +46,7 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{DIGIT}+{SPACE}*[;]                             { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal macro definition. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{ALPHA}({ALPHA}|{UND}|{DIGIT})*{SPACE}*[;]      { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal macro definition. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
+
 "int"                   {printf("\n%30s%30s%30s%d%30s%d\n", "INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INT);}
 "short"                 {printf("\n%30s%30s%30s%d%30s%d\n", "SHORT INT", yytext, "Line Number:", yylineno, "Token Number:",SHORT );}
 "long"                  {printf("\n%30s%30s%30s%d%30s%d\n", "LONG INT", yytext, "Line Number:", yylineno, "Token Number:", LONG );}
@@ -59,14 +61,31 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 "break"                 {printf("\n%30s%30s%30s%d%30s%d\n", "BREAK", yytext, "Line Number:", yylineno, "Token Number:",BREAK );}
 "return"                {printf("\n%30s%30s%30s%d%30s%d\n", "RETURN", yytext, "Line Number:", yylineno, "Token Number:",RETURN );}
 
+  /* Rules for numeric constants needs to be before identifiers otherwise giving error */
+0([x|X])({DIGIT}|[a-fA-F])+    {printf("\n%30s%30s%30s%d%30s%d\n", "HEXADECIMAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",HEXADECIMAL_CONSTANT );}
+{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT  );}
+{NEG}{DIGIT}*{DOT}{DIGIT}+   {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT );}
+
+ /* Invalid mantissa exponent forms */
+({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
+({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
+
+ /* Valid Mantissa Exponent forms */ 
+({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {printf("\n%30s%30s%30s%d%30s%d\n", "FLOATING CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT );printf("%s", NRML);}
+({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {printf("\n%30s%30s%30s%d%30s%d\n", "FLOATING CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT );printf("%s", NRML);}
+
+
+
+
+{PLUS}?{DIGIT}+              {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );}
+{NEG}{DIGIT}+                {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );}
+
+
 {FUNCTION}                   {printf("\n%30s%30s%30s%d%30s%d\n", "FUNCTION", yytext, "Line Number:", yylineno, "Token Number:",FUNC );}
 {IDENTIFIER}                 {printf("\n%30s%30s%30s%d%30s%d\n", "IDENTIFIER", yytext, "Line Number:", yylineno, "Token Number:",IDENTIFIER );}
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
-{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT  );}
-{NEG}{DIGIT}*{DOT}{DIGIT}+   {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT );} 
-{PLUS}?{DIGIT}+              {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );}
-{NEG}{DIGIT}+                {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );}
+
 
 
 "+="                {printf("\n%30s%30s%30s%d%30s%d\n", "PLUS EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",PLUSEQ );}  
