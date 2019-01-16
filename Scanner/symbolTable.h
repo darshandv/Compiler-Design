@@ -74,7 +74,7 @@ stEntry* search(stEntry** hash_table, char* lexeme){
 void insert(stEntry** hash_table, char* lexeme, int token){
 	if(search(hash_table, lexeme)!=NULL)
 	{
-		printf("\nError : Token already exists. Not inserting\n");
+		//printf("\nError : Token already exists. Not inserting\n");
 		return;
 	}
 
@@ -102,9 +102,9 @@ void display(stEntry** hash_table){
 	int i=0;
 	stEntry* iterator;
 
-	printf("\n============================================================\n");
-	printf("            lexeme            |            token             \n");
-	printf("\n============================================================\n");
+	printf("\n=============================================================\n");
+	printf("            lexeme            |            token               ");
+	printf("\n=============================================================\n");
 
 	for(;i<TABLE_SIZE;++i){
 		iterator = hash_table[i];
@@ -114,5 +114,5 @@ void display(stEntry** hash_table){
 			iterator = iterator->next;
 		}
 	}
-	printf("\n============================================================\n");
+	printf("\n=============================================================\n");
 }

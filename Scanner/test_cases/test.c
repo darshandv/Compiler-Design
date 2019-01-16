@@ -7,6 +7,8 @@ int main()
   long long int total, diff;
   int *ptr;
   unsigned int a = 0x0f;
+  unsigned int b = 0115;
+  unsigned int o = 01187;
   long int mylong = 123456l;
   long int i, j;
   for(i=0; i < 10; i++){
