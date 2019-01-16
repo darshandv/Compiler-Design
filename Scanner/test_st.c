@@ -1,5 +1,9 @@
 #include "symbolTable.h"
 
+/*
+This is a test
+
+
 int main(int argc, char const *argv[])
 {
 	char *test = "while";

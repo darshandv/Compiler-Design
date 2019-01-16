@@ -1,5 +1,10 @@
 #include "symbolTable.h"
 
+
+/*
+** tHIS IS A TEST
+** SDSAD
+*/
 int main(int argc, char const *argv[])
 {
 	char *test = "while";
