@@ -88,6 +88,10 @@ STRING \"([^\\\"]|\\.)*\"
 \"([^\\\"]|\\.)* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal String", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 \"([^\\\"]|\\.)*\" {printf("\n%30s%30s%30s%d%30s%d\n", "STRING CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",STRING_CONSTANT );}
 
+ /* Character Constant */
+ \'([^\\\"]|\\.)\' {printf("\n%30s%30s%30s%d%30s%d\n", "CHARACTER CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",CHARACTER_CONSTANT );}
+ \''             {printf("\n%s%30s%30s%30s%d\n", RED,  "Empty character constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
+
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
 0([x|X])({DIGIT}|[a-fA-F])+    {printf("\n%30s%30s%30s%d%30s%d\n", "HEXADECIMAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",HEXADECIMAL_CONSTANT );insert(constant_table,yytext,HEXADECIMAL_CONSTANT);}
 0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
@@ -168,7 +172,6 @@ STRING \"([^\\\"]|\\.)*\"
 "}"                 {printf("\n%30s%30s%30s%d%30s%d\n", "CLOSE_BRACE", yytext, "Line Number:", yylineno, "Token Number:",CLOSE_BRACE);} 
 "["                 {printf("\n%30s%30s%30s%d%30s%d\n", "OPEN_SQR_BKT", yytext, "Line Number:", yylineno, "Token Number:",OPEN_SQR_BKT );} 
 "]"                 {printf("\n%30s%30s%30s%d%30s%d\n", "CLOSE_SQR_BKT", yytext, "Line Number:", yylineno, "Token Number:",CLOSE_SQR_BKT );} 
-"\'"                 {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE_QUOTE", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_QUOTE );} 
 
 
 . {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Character ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}

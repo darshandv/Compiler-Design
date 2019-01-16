@@ -69,7 +69,6 @@ enum special_chars {
     CLOSE_BRACE,
     OPEN_SQR_BKT,
     CLOSE_SQR_BKT,
-    SINGLE_QUOTE
 };
 
 // Preprocessor directives start from 150
@@ -90,7 +89,8 @@ enum CONSTANT {
     FLOATING_CONSTANT,
     HEXADECIMAL_CONSTANT,
 	OCTAL_CONSTANT,
-    STRING_CONSTANT
+    STRING_CONSTANT,
+    CHARACTER_CONSTANT
 };
 
 
