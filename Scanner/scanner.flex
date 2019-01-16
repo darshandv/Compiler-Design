@@ -26,7 +26,7 @@ NEG [-]
 DOT [.]
 DIGIT [0-9]
 IDENTIFIER {ALPHA}({ALPHA}|{DIGIT}|{UND})* 
-INVALID_IDENTIFIER [~`@#]
+INVALID_IDENTIFIER [`@#]
 FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 STRING \"([^\\\"]|\\.)*\"
 
@@ -124,6 +124,22 @@ STRING \"([^\\\"]|\\.)*\"
 "/="                {printf("\n%30s%30s%30s%d%30s%d\n", "DIV EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",DIVEQ );}  
 "%="                {printf("\n%30s%30s%30s%d%30s%d\n", "MOD EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",MODEQ);}  
 
+
+ /* Logical Operators */
+
+"&&"                {printf("\n%30s%30s%30s%d%30s%d\n", "LOGICAL AND", yytext, "Line Number:", yylineno, "Token Number:",AND );}
+"||"				{printf("\n%30s%30s%30s%d%30s%d\n", "LOGICAL OR", yytext, "Line Number:", yylineno, "Token Number:",OR );}
+"!"                 {printf("\n%30s%30s%30s%d%30s%d\n", "LOGICAL NOT", yytext, "Line Number:", yylineno, "Token Number:",NOT );}
+
+ /* Bitwise Operators */
+
+">>"                    {printf("\n%30s%30s%30s%d%30s%d\n", "RIGHT SHIFT", yytext, "Line Number:", yylineno, "Token Number:",RSHIFT );}
+"<<"                    {printf("\n%30s%30s%30s%d%30s%d\n", "LEFT SHIFT", yytext, "Line Number:", yylineno, "Token Number:",LSHIFT );}
+"^"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE XOR", yytext, "Line Number:", yylineno, "Token Number:",BIT_XOR );}
+"&"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE AND", yytext, "Line Number:", yylineno, "Token Number:",BIT_AND );}
+"|"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE OR", yytext, "Line Number:", yylineno, "Token Number:",BIT_OR );}
+"~"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE NOT", yytext, "Line Number:", yylineno, "Token Number:",BIT_NOT );}
+
  /* Relational operators */
 "="                     {printf("\n%30s%30s%30s%d%30s%d\n", "EQUALTO", yytext, "Line Number:", yylineno, "Token Number:",EQ );}  
 "!="                    {printf("\n%30s%30s%30s%d%30s%d\n", "UNEQUAL", yytext, "Line Number:", yylineno, "Token Number:",NEQ );}  
@@ -152,6 +168,7 @@ STRING \"([^\\\"]|\\.)*\"
 "}"                 {printf("\n%30s%30s%30s%d%30s%d\n", "CLOSE_BRACE", yytext, "Line Number:", yylineno, "Token Number:",CLOSE_BRACE);} 
 "["                 {printf("\n%30s%30s%30s%d%30s%d\n", "OPEN_SQR_BKT", yytext, "Line Number:", yylineno, "Token Number:",OPEN_SQR_BKT );} 
 "]"                 {printf("\n%30s%30s%30s%d%30s%d\n", "CLOSE_SQR_BKT", yytext, "Line Number:", yylineno, "Token Number:",CLOSE_SQR_BKT );} 
+"\'"                 {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE_QUOTE", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_QUOTE );} 
 
 
 . {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Character ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}

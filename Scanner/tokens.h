@@ -40,12 +40,16 @@ enum operators {
     INC,
     DEC,
     // Bitwise 
-    AND,
-    OR,
-    XOR,
-    NOT,
+    BIT_AND,
+    BIT_OR,
+    BIT_XOR,
+    BIT_NOT,
     LSHIFT,
     RSHIFT,
+    //Logical
+    AND,
+    OR,
+    NOT,
     // Assignment
     PLUSEQ,
     MINUSEQ,
@@ -64,7 +68,8 @@ enum special_chars {
     OPEN_BRACE,
     CLOSE_BRACE,
     OPEN_SQR_BKT,
-    CLOSE_SQR_BKT
+    CLOSE_SQR_BKT,
+    SINGLE_QUOTE
 };
 
 // Preprocessor directives start from 150
