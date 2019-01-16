@@ -26,6 +26,7 @@ DOT [.]
 DIGIT [0-9]
 IDENTIFIER {ALPHA}({ALPHA}|{DIGIT}|{UND})* 
 FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
+STRING \"([^\\\"]|\\.)*\"
 
 %option yylineno
 
@@ -37,8 +38,8 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 
 
  /* Include directives */
-#include{SPACE}*<{ALPHA}+\.h>[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
-#include{SPACE}*\"{ALPHA}+\"[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
+#include{SPACE}*<{ALPHA}+\.?{ALPHA}+>[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
+#include{SPACE}*\"{ALPHA}+\.?{ALPHA}+\"[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "PREPROCESSING DIRECTIVE", yytext, "Line Number:", yylineno, "Token Number:",INCLUDE);}
 
  /* Illegal include statements */ 
 #include{SPACE}*<{ALPHA}+\.h>{SPACE}*[;] { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal preprocessing detective. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
@@ -74,6 +75,7 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 0([x|X])({DIGIT}|[a-fA-F])+    {printf("\n%30s%30s%30s%d%30s%d\n", "HEXADECIMAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",HEXADECIMAL_CONSTANT );}
 {PLUS}?{DIGIT}*{DOT}{DIGIT}+ {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT  );}
 {NEG}{DIGIT}*{DOT}{DIGIT}+   {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT );}
+{STRING} {printf("\n%30s%30s%30s%d%30s%d\n", "STRING CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",STRING_CONSTANT );}
 
  /* Invalid mantissa exponent forms */
 ({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
@@ -90,7 +92,7 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 {NEG}{DIGIT}+                {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );}
 
 
-{FUNCTION}                   {printf("\n%30s%30s%30s%d%30s%d\n", "FUNCTION", yytext, "Line Number:", yylineno, "Token Number:",FUNC );}
+
 {IDENTIFIER}                 {printf("\n%30s%30s%30s%d%30s%d\n", "IDENTIFIER", yytext, "Line Number:", yylineno, "Token Number:",IDENTIFIER );}
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
