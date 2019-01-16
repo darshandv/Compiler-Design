@@ -26,6 +26,7 @@ NEG [-]
 DOT [.]
 DIGIT [0-9]
 IDENTIFIER {ALPHA}({ALPHA}|{DIGIT}|{UND})* 
+INVALID_IDENTIFIER [~`@#]
 FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 STRING \"([^\\\"]|\\.)*\"
 
@@ -109,9 +110,9 @@ STRING \"([^\\\"]|\\.)*\"
 {PLUS}?{DIGIT}+              {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );insert(constant_table,yytext,INTEGER_CONSTANT);}
 {NEG}{DIGIT}+                {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );insert(constant_table,yytext,INTEGER_CONSTANT);}
 
-
-
+({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 {IDENTIFIER}                 {printf("\n%30s%30s%30s%d%30s%d\n", "IDENTIFIER", yytext, "Line Number:", yylineno, "Token Number:",IDENTIFIER );insert(symbol_table,yytext,IDENTIFIER);}
+
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
 
