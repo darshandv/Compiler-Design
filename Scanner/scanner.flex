@@ -89,6 +89,7 @@ STRING \"([^\\\"]|\\.)*\"
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
 0([x|X])({DIGIT}|[a-fA-F])+    {printf("\n%30s%30s%30s%d%30s%d\n", "HEXADECIMAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",HEXADECIMAL_CONSTANT );insert(constant_table,yytext,HEXADECIMAL_CONSTANT);}
+0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 0([0-7])+    {printf("\n%30s%30s%30s%d%30s%d\n", "OCTAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",OCTAL_CONSTANT );insert(constant_table,yytext,OCTAL_CONSTANT);}
 0([0-9])+   { printf("\n%s%30s%30s%30s%d\n", RED,  "  Illegal octal constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 {PLUS}?{DIGIT}*{DOT}{DIGIT}+ {printf("\n%30s%30s%30s%d%30s%d\n", "POSITIVE FRACTION", yytext, "Line Number:", yylineno, "Token Number:",FLOATING_CONSTANT  );insert(constant_table,yytext,FLOATING_CONSTANT);}
