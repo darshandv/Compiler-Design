@@ -6,9 +6,13 @@
     #include<stdio.h>
     #include <stdlib.h>
     #include "tokens.h"
+	#include "symbolTable.h"
     #define NRML  "\x1B[0m"
     #define RED  "\x1B[31m"
     #define BLUE   "\x1B[34m"
+
+	stEntry** symbol_table;
+	stEntry** constant_table;
 %}
 
 
@@ -131,5 +135,18 @@ FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 
 
 \n {}
+%%
 
+int yywrap(){
+	return 1;
+}
+
+int main(){
+	yyin = fopen("testcases/test.c","r");
+	symbol_table = new_table();
+	constant_table = new_table();
+	yylex();
+	display(symbol_table);
+	display(constant_table);
+}
 

@@ -74,7 +74,7 @@ stEntry* search(stEntry** hash_table, char* lexeme){
 void insert(stEntry** hash_table, char* lexeme, int token){
 	if(search(hash_table, lexeme)!=NULL)
 	{
-		printf("\nError : Token already exists. Not inserting\n");
+		//printf("\nError : Token already exists. Not inserting\n");
 		return;
 	}
 
