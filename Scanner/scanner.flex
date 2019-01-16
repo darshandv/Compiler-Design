@@ -39,9 +39,9 @@ STRING \"([^\\\"]|\\.)*\"
 
 
 "/*"                              {comment_strt = yylineno; BEGIN comment;}
-<comment>.|[ ]                      ;
+<comment>.|[ ]                     ;
 <comment>\n                          {yylineno++;}
-<comment>"*/"                        {BEGIN INITIAL;}
+<comment>"*/"                        { { printf("\n%30s%30s%30s%d%30s%d\n", "MULTI LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",MULTI_LINE);}BEGIN INITIAL;}
 <comment>"/*"                        {printf("\n%s%30s%30s%30s%d\n", RED,  "Nested comment", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 <comment><<EOF>>                     {printf("\n%s%30s%30s%30s%d\n", RED,  "Unterminated comment", yytext ,"Line Number:", yylineno);printf("%s", NRML); yyterminate();}
  /* Single Line Comment */ 
