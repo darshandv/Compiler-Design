@@ -1,5 +1,6 @@
 /*
  * This file will contain the actual scanner written in fLEX.
+ * Team Members: Mahir Jain (16CO123), Suraj Singh (16CO146), Darshan DV(16CO216)
 */
 /* Definition section */
 %{
@@ -115,6 +116,7 @@ STRING \"([^\\\"]|\\.)*\"
 {NEG}{DIGIT}+                {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );insert(constant_table,yytext,INTEGER_CONSTANT);}
 
 ({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
+{UND}{IDENTIFIER} { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 {IDENTIFIER}                 {printf("\n%30s%30s%30s%d%30s%d\n", "IDENTIFIER", yytext, "Line Number:", yylineno, "Token Number:",IDENTIFIER );insert(symbol_table,yytext,IDENTIFIER);}
 
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
