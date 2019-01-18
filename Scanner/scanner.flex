@@ -46,7 +46,7 @@ STRING \"([^\\\"]|\\.)*\"
 <comment>"/*"                        {printf("\n%s%30s%30s%30s%d\n", RED,  "Nested comment", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 <comment><<EOF>>                     {printf("\n%s%30s%30s%30s%d\n", RED,  "Unterminated comment", yytext ,"Line Number:", yylineno);printf("%s", NRML); yyterminate();}
  /* Single Line Comment */ 
-\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_LINE);}
+\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno-1, "Token Number:",SINGLE_LINE);}
 
 [\t\r ]+ { 
   /* ignore whitespace */ }
