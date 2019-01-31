@@ -1,5 +1,6 @@
 /*
  * This file will contain the actual scanner written in fLEX.
+ * Team Members: Mahir Jain (16CO123), Suraj Singh (16CO146), Darshan DV(16CO216)
 */
 /* Definition section */
 %{
@@ -26,7 +27,7 @@ NEG [-]
 DOT [.]
 DIGIT [0-9]
 IDENTIFIER {ALPHA}({ALPHA}|{DIGIT}|{UND})* 
-INVALID_IDENTIFIER [~`@#]
+INVALID_IDENTIFIER [`@#]
 FUNCTION ({UND}|{ALPHA})({ALPHA}|{DIGIT}|{UND})*{SPACE}*\({SPACE}*\)
 STRING \"([^\\\"]|\\.)*\"
 
@@ -39,13 +40,13 @@ STRING \"([^\\\"]|\\.)*\"
 
 
 "/*"                              {comment_strt = yylineno; BEGIN comment;}
-<comment>.|[ ]                      ;
+<comment>.|[ ]                     ;
 <comment>\n                          {yylineno++;}
-<comment>"*/"                        {BEGIN INITIAL;}
+<comment>"*/"                        { { printf("\n%30s%30s%30s%d%30s%d\n", "MULTI LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",MULTI_LINE);}BEGIN INITIAL;}
 <comment>"/*"                        {printf("\n%s%30s%30s%30s%d\n", RED,  "Nested comment", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 <comment><<EOF>>                     {printf("\n%s%30s%30s%30s%d\n", RED,  "Unterminated comment", yytext ,"Line Number:", yylineno);printf("%s", NRML); yyterminate();}
  /* Single Line Comment */ 
-\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno, "Token Number:",SINGLE_LINE);}
+\/\/(.)*[\n]  {printf("\n%30s%30s%30s%d%30s%d\n", "SINGLE LINE COMMENT", yytext, "Line Number:", yylineno-1, "Token Number:",SINGLE_LINE);}
 
 [\t\r ]+ { 
   /* ignore whitespace */ }
@@ -88,6 +89,10 @@ STRING \"([^\\\"]|\\.)*\"
 \"([^\\\"]|\\.)* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal String", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 \"([^\\\"]|\\.)*\" {printf("\n%30s%30s%30s%d%30s%d\n", "STRING CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",STRING_CONSTANT );}
 
+ /* Character Constant */
+ \'([^\\\"]|\\.)\' {printf("\n%30s%30s%30s%d%30s%d\n", "CHARACTER CONSTANT", yytext, "Line Number:", yylineno, "Token Number:",CHARACTER_CONSTANT );}
+ \''             {printf("\n%s%30s%30s%30s%d\n", RED,  "Empty character constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
+
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
 0([x|X])({DIGIT}|[a-fA-F])+    {printf("\n%30s%30s%30s%d%30s%d\n", "HEXADECIMAL INTEGER", yytext, "Line Number:", yylineno, "Token Number:",HEXADECIMAL_CONSTANT );insert(constant_table,yytext,HEXADECIMAL_CONSTANT);}
 0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
@@ -111,6 +116,7 @@ STRING \"([^\\\"]|\\.)*\"
 {NEG}{DIGIT}+                {printf("\n%30s%30s%30s%d%30s%d\n", "NEGATIVE INTEGER", yytext, "Line Number:", yylineno, "Token Number:",INTEGER_CONSTANT );insert(constant_table,yytext,INTEGER_CONSTANT);}
 
 ({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
+{UND}{IDENTIFIER} { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 {IDENTIFIER}                 {printf("\n%30s%30s%30s%d%30s%d\n", "IDENTIFIER", yytext, "Line Number:", yylineno, "Token Number:",IDENTIFIER );insert(symbol_table,yytext,IDENTIFIER);}
 
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
@@ -123,6 +129,22 @@ STRING \"([^\\\"]|\\.)*\"
 "*="                {printf("\n%30s%30s%30s%d%30s%d\n", "MUL EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",MULEQ );}  
 "/="                {printf("\n%30s%30s%30s%d%30s%d\n", "DIV EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",DIVEQ );}  
 "%="                {printf("\n%30s%30s%30s%d%30s%d\n", "MOD EQUAL TO", yytext, "Line Number:", yylineno, "Token Number:",MODEQ);}  
+
+
+ /* Logical Operators */
+
+"&&"                {printf("\n%30s%30s%30s%d%30s%d\n", "LOGICAL AND", yytext, "Line Number:", yylineno, "Token Number:",AND );}
+"||"				{printf("\n%30s%30s%30s%d%30s%d\n", "LOGICAL OR", yytext, "Line Number:", yylineno, "Token Number:",OR );}
+"!"                 {printf("\n%30s%30s%30s%d%30s%d\n", "LOGICAL NOT", yytext, "Line Number:", yylineno, "Token Number:",NOT );}
+
+ /* Bitwise Operators */
+
+">>"                    {printf("\n%30s%30s%30s%d%30s%d\n", "RIGHT SHIFT", yytext, "Line Number:", yylineno, "Token Number:",RSHIFT );}
+"<<"                    {printf("\n%30s%30s%30s%d%30s%d\n", "LEFT SHIFT", yytext, "Line Number:", yylineno, "Token Number:",LSHIFT );}
+"^"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE XOR", yytext, "Line Number:", yylineno, "Token Number:",BIT_XOR );}
+"&"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE AND", yytext, "Line Number:", yylineno, "Token Number:",BIT_AND );}
+"|"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE OR", yytext, "Line Number:", yylineno, "Token Number:",BIT_OR );}
+"~"                    {printf("\n%30s%30s%30s%d%30s%d\n", "BITWISE NOT", yytext, "Line Number:", yylineno, "Token Number:",BIT_NOT );}
 
  /* Relational operators */
 "="                     {printf("\n%30s%30s%30s%d%30s%d\n", "EQUALTO", yytext, "Line Number:", yylineno, "Token Number:",EQ );}  
