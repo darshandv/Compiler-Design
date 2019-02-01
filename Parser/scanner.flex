@@ -142,8 +142,8 @@ STRING \"([^\\\"]|\\.)*\"
  /* Punctuators */
 ","                 {yylval.op_val=new std:string(yytext); return COMMA;}   
 ";"                 {yylval.op_val=new std:string(yytext); return SEMICOLON;} 
-"("                 {yylval.op_val=new std:string(yytext); return OPEN_PARANTHESIS;} 
-")"                 {yylval.op_val=new std:string(yytext); return CLOSE_PARANTHESIS );} 
+"("                 {yylval.op_val=new std:string(yytext); return OPEN_PARENTHESIS;} 
+")"                 {yylval.op_val=new std:string(yytext); return CLOSE_PARENTHESIS );} 
 "{"                 {yylval.op_val=new std:string(yytext); return OPEN_BRACE ;} 
 "}"                 {yylval.op_val=new std:string(yytext); return CLOSE_BRACE;} 
 "["                 {yylval.op_val=new std:string(yytext); return OPEN_SQR_BKT ;} 
