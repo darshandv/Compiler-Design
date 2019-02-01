@@ -1,15 +1,22 @@
 %{
 #include <stdio.h>
-#include "calc.h" 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include "symbolTable.h"
+#include "share_symbol.h"
+stEntry ** constant_table, ** symbol_table;
 int yylex();
-stEntry ** constant_table, symbol_table;
+void yyerror(const char *s);
+
+
 
 %}
+
 %union {
+    stEntry* entry;
     double fraction;
     long val;
-    string * op_val;
-    stEntry* entry;
 }
 
 %start start_state
@@ -34,10 +41,22 @@ stEntry ** constant_table, symbol_table;
 %token OR AND NOT BIT_OR BIT_XOR BIT_AND LSHIFT RSHIFT
 
 /* Arithmetic Operators */
-%token PLUS MINUS MOD DIV MUL INC DEC
+%token PLUS MINUS MOD DIV MUL INC DEC MODULO
+
+/* Assignment Operators */
+%token PLUSEQ MINUSEQ MULEQ DIVEQ MODEQ 
 
 /* Punctuators */
-%token COMMA SEMICOLON OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACE CLOSE_BRACE
+%token COMMA SEMICOLON OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACE CLOSE_BRACE OPEN_SQR_BKT CLOSE_SQR_BKT
+
+/* Special */
+%token OPEN_SQR_BKT CLOSE_SQR_BKT 
+
+/* Comments */
+%token SINGLE_LINE
+
+/* Constants */ 
+%token STRING_CONSTANT INTEGER_CONSTANT HEXADECIMAL_CONSTANT OCTAL_CONSTANT FLOATING_CONSTANT
 
  
 %type <fraction> exp 
@@ -58,11 +77,13 @@ stEntry ** constant_table, symbol_table;
 
 start_state: start_state option | option;
 
-option: function | declaration | preprocessor_directive;
+option:  preprocessor_directive;
 
 preprocessor_directive: INCLUDE | DEF;
 
+/*
 declaration: ;
+
 datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG;
@@ -100,7 +121,7 @@ sub_exp: NUMBER	{ $$ = $1; }
     | sub_exp LE sub_exp { $$ = $1 <= $3; }
         | NOT sub_exp { $$  = !$2; }
 		;
- 
+ */
 
 %%
 
@@ -110,8 +131,9 @@ void yyerror (char const *s) {
 
 int main(int argc, char *argv[])
 {
-	symbol_table = create_table();
-	constant_table = create_table();
+    extern FILE *yyin;
+	symbol_table = new_table();
+	constant_table = new_table();
 	yyin = fopen(argv[1], "r");
 	if(!yyparse())
 	{

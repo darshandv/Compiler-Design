@@ -75,7 +75,7 @@ stEntry* insert(stEntry** hash_table, char* lexeme, int token){
 	if(search(hash_table, lexeme)!=NULL)
 	{
 		//printf("\nError : Token already exists. Not inserting\n");
-		return;
+		return NULL;
 	}
 
 	unsigned int index = hash_value(lexeme);
@@ -118,3 +118,6 @@ void display(stEntry** hash_table){
 	}
 	printf("\n=============================================================\n");
 }
+
+
+

@@ -46,29 +46,139 @@ extern int yydebug;
   enum yytokentype
   {
     NUMBER = 258,
-    PLUS = 259,
-    MINUS = 260,
-    MUL = 261,
-    DIV = 262
+    IDENTIFIER = 259,
+    INCLUDE = 260,
+    DEF = 261,
+    CHAR = 262,
+    SHORT = 263,
+    INT = 264,
+    LONG = 265,
+    LONG_LONG = 266,
+    SIGNED = 267,
+    UNSIGNED = 268,
+    IF = 269,
+    ELSE = 270,
+    WHILE = 271,
+    RETURN = 272,
+    CONTINUE = 273,
+    BREAK = 274,
+    EQ = 275,
+    EQEQ = 276,
+    NEQ = 277,
+    GT = 278,
+    LT = 279,
+    GE = 280,
+    LE = 281,
+    OR = 282,
+    AND = 283,
+    NOT = 284,
+    BIT_OR = 285,
+    BIT_XOR = 286,
+    BIT_AND = 287,
+    LSHIFT = 288,
+    RSHIFT = 289,
+    PLUS = 290,
+    MINUS = 291,
+    MOD = 292,
+    DIV = 293,
+    MUL = 294,
+    INC = 295,
+    DEC = 296,
+    MODULO = 297,
+    PLUSEQ = 298,
+    MINUSEQ = 299,
+    MULEQ = 300,
+    DIVEQ = 301,
+    MODEQ = 302,
+    COMMA = 303,
+    SEMICOLON = 304,
+    OPEN_PARENTHESIS = 305,
+    CLOSE_PARENTHESIS = 306,
+    OPEN_BRACE = 307,
+    CLOSE_BRACE = 308,
+    OPEN_SQR_BKT = 309,
+    CLOSE_SQR_BKT = 310,
+    SINGLE_LINE = 311,
+    STRING_CONSTANT = 312,
+    INTEGER_CONSTANT = 313,
+    HEXADECIMAL_CONSTANT = 314,
+    OCTAL_CONSTANT = 315,
+    FLOATING_CONSTANT = 316
   };
 #endif
 /* Tokens.  */
 #define NUMBER 258
-#define PLUS 259
-#define MINUS 260
-#define MUL 261
-#define DIV 262
+#define IDENTIFIER 259
+#define INCLUDE 260
+#define DEF 261
+#define CHAR 262
+#define SHORT 263
+#define INT 264
+#define LONG 265
+#define LONG_LONG 266
+#define SIGNED 267
+#define UNSIGNED 268
+#define IF 269
+#define ELSE 270
+#define WHILE 271
+#define RETURN 272
+#define CONTINUE 273
+#define BREAK 274
+#define EQ 275
+#define EQEQ 276
+#define NEQ 277
+#define GT 278
+#define LT 279
+#define GE 280
+#define LE 281
+#define OR 282
+#define AND 283
+#define NOT 284
+#define BIT_OR 285
+#define BIT_XOR 286
+#define BIT_AND 287
+#define LSHIFT 288
+#define RSHIFT 289
+#define PLUS 290
+#define MINUS 291
+#define MOD 292
+#define DIV 293
+#define MUL 294
+#define INC 295
+#define DEC 296
+#define MODULO 297
+#define PLUSEQ 298
+#define MINUSEQ 299
+#define MULEQ 300
+#define DIVEQ 301
+#define MODEQ 302
+#define COMMA 303
+#define SEMICOLON 304
+#define OPEN_PARENTHESIS 305
+#define CLOSE_PARENTHESIS 306
+#define OPEN_BRACE 307
+#define CLOSE_BRACE 308
+#define OPEN_SQR_BKT 309
+#define CLOSE_SQR_BKT 310
+#define SINGLE_LINE 311
+#define STRING_CONSTANT 312
+#define INTEGER_CONSTANT 313
+#define HEXADECIMAL_CONSTANT 314
+#define OCTAL_CONSTANT 315
+#define FLOATING_CONSTANT 316
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 7 "calc.y" /* yacc.c:1909  */
+#line 16 "parser.y" /* yacc.c:1909  */
 
-    long value;
+    stEntry* entry;
+    double fraction;
+    long val;
 
-#line 72 "y.tab.h" /* yacc.c:1909  */
+#line 182 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

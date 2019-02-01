@@ -3,13 +3,19 @@
 */
 /* Definition section */
 %{
-    #include<stdio.h>
-    #include <stdlib.h>
-	#include "y.tab.h"
     #define NRML  "\x1B[0m"
     #define RED  "\x1B[31m"
     #define BLUE   "\x1B[34m"
+    #include <stdlib.h>
+    #include <string.h>
+    #include <ctype.h>
+    #include "y.tab.h"
+    
+    
     int comment_strt =0;
+    // stEntry ** constant_table, **symbol_table;
+
+    
 %}
 
 
@@ -66,39 +72,39 @@ STRING \"([^\\\"]|\\.)*\"
 #define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{ALPHA}({ALPHA}|{UND}|{DIGIT})*{SPACE}*[;]      { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal macro definition. Ended with semicolon at ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
  /* Keywords */
-"int"                   {yylval.op_val=new std:string(yytext);return INT;}
-"short"                 {yylval.op_val=new std:string(yytext);return SHORT;}
-"long"                  {yylval.op_val=new std:string(yytext);return LONG;}
-"long long"             {yylval.op_val=new std:string(yytext);return LONG_LONG;}
-"signed"                {yylval.op_val=new std:string(yytext);return SIGNED;}
-"unsigned"              {yylval.op_val=new std:string(yytext);return UNSIGNED;}
-"char"                  {yylval.op_val=new std:string(yytext);return CHAR;}
-"if"                    {yylval.op_val=new std:string(yytext);return IF;}
-"else"                  {yylval.op_val=new std:string(yytext);return ELSE;}
-"while"                 {yylval.op_val=new std:string(yytext);return WHILE;}
-"continue"              {yylval.op_val=new std:string(yytext);return CONTINUE;}
-"break"                 {yylval.op_val=new std:string(yytext);return BREAK;}
-"return"                {yylval.op_val=new std:string(yytext);reutn RETURN;}
+"int"                   { return INT;}
+"short"                 { return SHORT;}
+"long"                  { return LONG;}
+"long long"             { return LONG_LONG;}
+"signed"                { return SIGNED;}
+"unsigned"              { return UNSIGNED;}
+"char"                  { return CHAR;}
+"if"                    { return IF;}
+"else"                  { return ELSE;}
+"while"                 { return WHILE;}
+"continue"              { return CONTINUE;}
+"break"                 { return BREAK;}
+"return"                { return RETURN;}
 
   /* Strings */
 \"([^\\\"]|\\.)* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal String", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-\"([^\\\"]|\\.)*\" {yylval.op_val=new std:string(yytext);return STRING_CONSTANT;}
+\"([^\\\"]|\\.)*\" { return STRING_CONSTANT;}
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
 0([x|X])({DIGIT}|[a-fA-F])+    {yylval.val=strtol(yytext,0,16);return HEXADECIMAL_CONSTANT ;insert(constant_table,yytext,HEXADECIMAL_CONSTANT);}
 0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT); yylval.value = strtol(yytext, 0, 8); return OCTAL_CONSTANT}
+0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT); yylval.val = strtol(yytext, 0, 8); return OCTAL_CONSTANT;}
 0([0-9])+   { printf("\n%s%30s%30s%30s%d\n", RED,  "  Illegal octal constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT}
-{NEG}{DIGIT}*{DOT}{DIGIT}+   {insert(constant_table,yytext,FLOATING_CONSTANT);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT}
+{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
+{NEG}{DIGIT}*{DOT}{DIGIT}+   {insert(constant_table,yytext,FLOATING_CONSTANT);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
 
  /* Invalid mantissa exponent forms */
 ({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 ({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
  /* Valid Mantissa Exponent forms */ 
-({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {yylval.entry = insert(constant_table,yytext,FLOATING_CONSTANT); yytext.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
-({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT); yytext.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
+({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {yylval.entry = insert(constant_table,yytext,FLOATING_CONSTANT); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
+({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
 
 
 
@@ -107,47 +113,47 @@ STRING \"([^\\\"]|\\.)*\"
 {NEG}{DIGIT}+                {insert(constant_table,yytext,INTEGER_CONSTANT); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
 
 ({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{IDENTIFIER}                 {insert(symbol_table,yytext,IDENTIFIER);yylval.op_val=std::new string(yytext);return IDENTIFIER;}
+{IDENTIFIER}                 {insert(symbol_table,yytext,IDENTIFIER);return IDENTIFIER;}
 
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
 
 
  /* Shorthand assignment operators */
-"+="                {yylval.op_val=new std:string(yytext);return PLUSEQ ;}  
-"-="                {yylval.op_val=new std:string(yytext);return MINUSEQ ;}  
-"*="                {yylval.op_val=new std:string(yytext);return MULEQ ;}  
-"/="                {yylval.op_val=new std:string(yytext);return DIVEQ ;}  
-"%="                {yylval.op_val=new std:string(yytext);return MODEQ;}  
+"+="                { return PLUSEQ ;}  
+"-="                { return MINUSEQ ;}  
+"*="                { return MULEQ ;}  
+"/="                { return DIVEQ ;}  
+"%="                { return MODEQ;}  
 
  /* Relational operators */
-"="                     {yylval.op_val=new std:string(yytext); return EQ;}  
-"!="                    {yylval.op_val=new std:string(yytext); return NEQ;}  
-">"                     {yylval.op_val=new std:string(yytext); return GT;}  
-"<"                     {yylval.op_val=new std:string(yytext); return LT;}  
-">="                    {yylval.op_val=new std:string(yytext); return GE; }
-"<="                    {yylval.op_val=new std:string(yytext); return LE;}  
-"=="                    {yylval.op_val=new std:string(yytext); return EQEQ;}  
+"="                     {  return EQ;}  
+"!="                    {  return NEQ;}  
+">"                     {  return GT;}  
+"<"                     {  return LT;}  
+">="                    {  return GE; }
+"<="                    {  return LE;}  
+"=="                    {  return EQEQ;}  
 
  /* Arithmetic Operators */
-"++"                    {yylval.op_val=new std:string(yytext); return INC ;}  
-"--"                    {yylval.op_val=new std:string(yytext); return DEC ;}  
-"+"                     {yylval.op_val=new std:string(yytext); return PLUS;}  
-"-"                     {yylval.op_val=new std:string(yytext); return MINUS;}  
-"*"                     {yylval.op_val=new std:string(yytext); return MUL;}  
-"/"                     {yylval.op_val=new std:string(yytext); return DIV;}  
-"%"                     {yylval.op_val=new std:string(yytext); return MODULO;}  
+"++"                    {  return INC ;}  
+"--"                    {  return DEC ;}  
+"+"                     {  return PLUS;}  
+"-"                     {  return MINUS;}  
+"*"                     {  return MUL;}  
+"/"                     {  return DIV;}  
+"%"                     {  return MODULO;}  
 
 
  /* Punctuators */
-","                 {yylval.op_val=new std:string(yytext); return COMMA;}   
-";"                 {yylval.op_val=new std:string(yytext); return SEMICOLON;} 
-"("                 {yylval.op_val=new std:string(yytext); return OPEN_PARENTHESIS;} 
-")"                 {yylval.op_val=new std:string(yytext); return CLOSE_PARENTHESIS );} 
-"{"                 {yylval.op_val=new std:string(yytext); return OPEN_BRACE ;} 
-"}"                 {yylval.op_val=new std:string(yytext); return CLOSE_BRACE;} 
-"["                 {yylval.op_val=new std:string(yytext); return OPEN_SQR_BKT ;} 
-"]"                 {yylval.op_val=new std:string(yytext); return CLOSE_SQR_BKT ;} 
+","                 {  return COMMA;}   
+";"                 {  return SEMICOLON;} 
+"("                 {  return OPEN_PARENTHESIS;} 
+")"                 {  return CLOSE_PARENTHESIS ;} 
+"{"                 {  return OPEN_BRACE ;} 
+"}"                 {  return CLOSE_BRACE;} 
+"["                 {  return OPEN_SQR_BKT ;} 
+"]"                 {  return CLOSE_SQR_BKT ;} 
 
 
 . {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Character ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
