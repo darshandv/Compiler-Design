@@ -9,6 +9,7 @@ typedef struct symbolTableEntry
 {
 	char* lexeme;
 	int token;
+	int value;
 	struct symbolTableEntry * next;
 } stEntry;
 stEntry ** constant_table, ** symbol_table;

@@ -26,9 +26,7 @@ void yyerror(const char *s);
 %token <val> NUMBER
 %token <entry> IDENTIFIER
 %token <ival> INTEGER_CONSTANT
-%token <val> FLOATING_CONSTANT
-%token <entry> IDENTIFIER
-%token <ival> INTEGER_CONSTANT
+%token <fraction> FLOATING_CONSTANT
 %token <ival> HEXADECIMAL_CONSTANT
 %token <ival> OCTAL_CONSTANT
 
@@ -62,7 +60,7 @@ void yyerror(const char *s);
 %token SINGLE_LINE
 
 /* Constants */ 
-%token STRING_CONSTANT HEXADECIMAL_CONSTANT OCTAL_CONSTANT FLOATING_CONSTANT
+%token STRING_CONSTANT
 
  
 %type <fraction> exp 
@@ -85,9 +83,10 @@ void yyerror(const char *s);
 %left PLUS MINUS
 %left MUL DIV MOD
 %right NOT
+
 %%
 
-start_state: start_state option | option;
+start_state: start_state option | option ;
 
 option:  function | declaration | preprocessor_directive | comments;
 
@@ -128,26 +127,29 @@ block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
 statement: statement statement_type | ;
 
-if_statement: ;
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type | IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ELSE statement_type ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-function_call: ;
+function_call: IDENTIFIER OPEN_PARENTHESIS args_call CLOSE_PARENTHESIS SEMICOLON;
+
+args_call: args_call COMMA args_call_def | args_call_def | ;
+
+args_call_def: IDENTIFIER | INTEGER_CONSTANT | FLOATING_CONSTANT | OCTAL_CONSTANT | STRING_CONSTANT | HEXADECIMAL_CONSTANT ;
 
 exp: exp ',' sub_exp { $$ = $1,$3;} | sub_exp { $$ = $1;};
 
-sub_exp: logical_exp
-        | binary_exp
-        | relational_exp
-        | arithmetic_exp
-        | assignment_exp
+sub_exp: logical_exp {printf("Result: %lf\n", $1);}
+        | binary_exp {printf("Result: %d\n", $1);}
+        | relational_exp {printf("Result: %lf\n", $1);}
+        | arithmetic_exp {printf("Result: %lf\n", $1);}
+        | assignment_exp 
 		;
  
 arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
-                | arithmetic_exp MOD arithmetic_exp { $$ = $1 % $3; }
                 | INTEGER_CONSTANT { $$ = $1; }
                 | FLOATING_CONSTANT { $$ = $1 ;}
                 | OCTAL_CONSTANT { $$ = $1 ;}
@@ -170,6 +172,7 @@ binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp BIT_XOR binary_exp { $$ = $1 ^ $3; }
             | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
             | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
+            | binary_exp MOD binary_exp { $$ = $1 % $3; }
             | INTEGER_CONSTANT { $$ = $1; }
             | IDENTIFIER { $$ = $1->value; }
             ;
@@ -180,7 +183,7 @@ relational_exp: relational_exp EQEQ relational_exp { $$ = $1 == $3; }
                 | relational_exp LT relational_exp { $$ = $1 < $3; }
                 | relational_exp GE relational_exp { $$ = $1 >= $3; }
                 | relational_exp LE relational_exp { $$ = $1 <= $3; }
-                | IDENTIFIER { $$ = $1->value ;}
+                | IDENTIFIER { $$ = $1->value; }
                 | INTEGER_CONSTANT { $$ = $1 ;}
                 | FLOATING_CONSTANT { $$ = $1 ;}
                 | OCTAL_CONSTANT { $$ = $1 ;}

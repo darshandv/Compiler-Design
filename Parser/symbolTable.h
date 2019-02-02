@@ -12,6 +12,7 @@ typedef struct symbolTableEntry
 {
 	char* lexeme;
 	int token;
+	int value;
 	struct symbolTableEntry * next;
 } stEntry;
 
@@ -46,7 +47,7 @@ stEntry** new_table(){
 }
 
 
-stEntry* new_entry(char *lexeme, int token)
+stEntry* new_entry(char *lexeme, int token, int value)
 {
 	stEntry *new_entry = NULL;
 
@@ -58,6 +59,7 @@ stEntry* new_entry(char *lexeme, int token)
 
 	new_entry->token = token;
 	new_entry->next = NULL;
+	new_entry->value = value;
 }
 
 stEntry* search(stEntry** hash_table, char* lexeme){
@@ -75,7 +77,7 @@ stEntry* search(stEntry** hash_table, char* lexeme){
 	else return key_entry;
 }
 
-stEntry* insert(stEntry** hash_table, char* lexeme, int token){
+stEntry* insert(stEntry** hash_table, char* lexeme, int token, int value){
 	if(search(hash_table, lexeme)!=NULL)
 	{
 		//printf("\nError : Token already exists. Not inserting\n");
@@ -83,7 +85,7 @@ stEntry* insert(stEntry** hash_table, char* lexeme, int token){
 	}
 
 	unsigned int index = hash_value(lexeme);
-	stEntry* newentry= new_entry(lexeme,token);
+	stEntry* newentry= new_entry(lexeme,token, value);
 
 	if (newentry == NULL){
 		printf("Cannot insert token into the symbol table\n");

@@ -10,6 +10,7 @@
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
+    #include<limits.h>
     //#include "symbolTable.h"
     #include "share_symbol.h"
     
@@ -98,29 +99,29 @@ STRING \"([^\\\"]|\\.)*\"
 \"([^\\\"]|\\.)*\" { return STRING_CONSTANT;}
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
-0([x|X])({DIGIT}|[a-fA-F])+    {yylval.val=strtol(yytext,0,16);return HEXADECIMAL_CONSTANT ;insert(constant_table,yytext,HEXADECIMAL_CONSTANT);}
+0([x|X])({DIGIT}|[a-fA-F])+    {yylval.val=strtol(yytext,0,16);return HEXADECIMAL_CONSTANT ;insert(constant_table,yytext,HEXADECIMAL_CONSTANT, INT_MAX);}
 0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT); yylval.val = strtol(yytext, 0, 8); return OCTAL_CONSTANT;}
+0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 8); return OCTAL_CONSTANT;}
 0([0-9])+   { printf("\n%s%30s%30s%30s%d\n", RED,  "  Illegal octal constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
-{NEG}{DIGIT}*{DOT}{DIGIT}+   {insert(constant_table,yytext,FLOATING_CONSTANT);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
+{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
+{NEG}{DIGIT}*{DOT}{DIGIT}+   {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
 
  /* Invalid mantissa exponent forms */
 ({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 ({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
  /* Valid Mantissa Exponent forms */ 
-({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {yylval.entry = insert(constant_table,yytext,FLOATING_CONSTANT); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
-({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
+({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {yylval.entry = insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
+({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
 
 
 
 
-{PLUS}?{DIGIT}+              {insert(constant_table,yytext,INTEGER_CONSTANT); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
-{NEG}{DIGIT}+                {insert(constant_table,yytext,INTEGER_CONSTANT); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
+{PLUS}?{DIGIT}+              {insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
+{NEG}{DIGIT}+                {insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
 
 ({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{IDENTIFIER}                 {insert(symbol_table,yytext,IDENTIFIER);return IDENTIFIER;}
+{IDENTIFIER}                 {insert(symbol_table,yytext,IDENTIFIER, INT_MAX);return IDENTIFIER;}
 
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
