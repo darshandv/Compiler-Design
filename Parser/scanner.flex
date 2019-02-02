@@ -79,6 +79,7 @@ STRING \"([^\\\"]|\\.)*\"
 
  /* Keywords */
 "int"                   { return INT;}
+"float"                 { return FLOAT;}
 "short"                 { return SHORT;}
 "long"                  { return LONG;}
 "long long"             { return LONG_LONG;}
@@ -132,6 +133,21 @@ STRING \"([^\\\"]|\\.)*\"
 "/="                { return DIVEQ ;}  
 "%="                { return MODEQ;}  
 
+
+ /* Logical Operators */
+
+"&&"                { return AND ;}
+"||"				        { return OR ;}
+"!"                 { return NOT ;}
+
+ /* Bitwise Operators */
+
+">>"                    { return RSHIFT ;}
+"<<"                    { return LSHIFT ;}
+"^"                    { return BIT_XOR ;}
+"&"                    { return BIT_AND ;}
+"|"                    { return BIT_OR ;}
+
  /* Relational operators */
 "="                     {  return EQ;}  
 "!="                    {  return NEQ;}  
@@ -148,7 +164,7 @@ STRING \"([^\\\"]|\\.)*\"
 "-"                     {  return MINUS;}  
 "*"                     {  return MUL;}  
 "/"                     {  return DIV;}  
-"%"                     {  return MODULO;}  
+"%"                     {  return MOD;}  
 
 
  /* Punctuators */
