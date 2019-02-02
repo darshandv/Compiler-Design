@@ -23,9 +23,12 @@ void yyerror(const char *s);
 
 %start start_state
 
-%token <val> NUMBER
+%token <val> FLOATING_CONSTANT
 %token <entry> IDENTIFIER
 %token <ival> INTEGER_CONSTANT
+%token <ival> HEXADECIMAL_CONSTANT
+%token <ival> OCTAL_CONSTANT
+
 
 
 /* Preprocessing Directive Tokens */
@@ -63,6 +66,8 @@ void yyerror(const char *s);
 %type <fraction> sub_exp
 %type <ival> binary_exp
 %type <fraction> arithmetic_exp
+%type <fraction> relational_exp
+%type <fraction> logical_exp
 
 %left COMMA
 %left OR
@@ -112,17 +117,11 @@ function_call: ;
 
 exp: exp ',' sub_exp { $$ = $1,$3;} | sub_exp { $$ = $1;};
 
-sub_exp: NUMBER	{ $$ = $1; }
-        | sub_exp AND sub_exp	{ $$ = $1 && $3; }
-        | sub_exp OR sub_exp { $$ = $1 || $3; }
-        | sub_exp EQEQ sub_exp { $$ = $1 == $3; }
-        | sub_exp NEQ sub_exp { $$ = $1 != $3; }
-        | sub_exp GT sub_exp { $$ = $1 > $3; }
-        | sub_exp LT sub_exp { $$ = $1 < $3; }
-        | sub_exp GE sub_exp { $$ = $1 >= $3; }
-        | sub_exp LE sub_exp { $$ = $1 <= $3; }
-        | NOT sub_exp { $$  = !$2; }
+sub_exp: logical_exp
         | binary_exp
+        | relational_exp
+        | arithmetic_exp
+        | assignment_exp
 		;
  
 arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
@@ -130,7 +129,21 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
                 | arithmetic_exp MOD arithmetic_exp { $$ = $1 % $3; }
-                | NUMBER { $$ = $1; }
+                | INTEGER_CONSTANT { $$ = $1; }
+                | FLOATING_CONSTANT { $$ = $1 ;}
+                | OCTAL_CONSTANT { $$ = $1 ;}
+                | HEXADECIMAL_CONSTANT { $$ = $1 ;}
+                | IDENTIFIER { $$ = $1->value; }
+                ;
+
+logical_exp:    sub_exp AND sub_exp	{ $$ = $1 && $3; }
+                | sub_exp OR sub_exp { $$ = $1 || $3; }
+                | NOT sub_exp { $$  = !$2; }
+                | INTEGER_CONSTANT { $$ = $1; }
+                | FLOATING_CONSTANT { $$ = $1 ;}
+                | OCTAL_CONSTANT { $$ = $1 ;}
+                | HEXADECIMAL_CONSTANT { $$ = $1 ;}
+                | IDENTIFIER { $$ = $1->value; }
                 ;
 
 binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
@@ -139,9 +152,24 @@ binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
             | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
             | INTEGER_CONSTANT { $$ = $1; }
+            | IDENTIFIER { $$ = $1->value; }
             ;
 
+relational_exp: relational_exp EQEQ relational_exp { $$ = $1 == $3; }
+                | relational_exp NEQ relational_exp { $$ = $1 != $3; }
+                | relational_exp GT relational_exp { $$ = $1 > $3; }
+                | relational_exp LT relational_exp { $$ = $1 < $3; }
+                | relational_exp GE relational_exp { $$ = $1 >= $3; }
+                | relational_exp LE relational_exp { $$ = $1 <= $3; }
+                | IDENTIFIER { $$ = $1->value ;}
+                | INTEGER_CONSTANT { $$ = $1 ;}
+                | FLOATING_CONSTANT { $$ = $1 ;}
+                | OCTAL_CONSTANT { $$ = $1 ;}
+                | HEXADECIMAL_CONSTANT { $$ = $1 ;}
+                ;
+
 assignment_exp: ;
+
 %%
 
 void yyerror (char const *s) {
