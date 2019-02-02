@@ -78,11 +78,10 @@ void yyerror(const char *s);
 
 start_state: start_state option | option;
 
-option:  preprocessor_directive;
+option:  function | declaration | preprocessor_directive;
 
 preprocessor_directive: INCLUDE | DEF;
 
-/*
 declaration: ;
 
 datatype: sign_extension type | type;
@@ -122,7 +121,7 @@ sub_exp: NUMBER	{ $$ = $1; }
     | sub_exp LE sub_exp { $$ = $1 <= $3; }
         | NOT sub_exp { $$  = !$2; }
 		;
- */
+ 
 
 %%
 
