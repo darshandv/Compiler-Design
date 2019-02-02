@@ -78,50 +78,9 @@ void yyerror(const char *s);
 
 start_state: start_state option | option;
 
-option:  function | declaration | preprocessor_directive;
+option:  preprocessor_directive;
 
 preprocessor_directive: INCLUDE | DEF;
-
-declaration: ;
-
-datatype: sign_extension type | type;
-sign_extension: SIGNED | UNSIGNED;
-type: INT | LONG | SHORT | CHAR | LONG_LONG;
-
-statement_type: single_statement | block_statement ;
-
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call | ;
-
-block_statement: OPEN_BRACE statement CLOSE_BRACE;
-
-statement: statement statement_type | ;
-
-
-
-
-exp: exp ',' sub_exp { $$ = $1,$3;} | sub_exp { $$ = $1;};
-
-sub_exp: NUMBER	{ $$ = $1; }
-		| sub_exp PLUS sub_exp	{ $$ = $1 + $3; }
-        | sub_exp MINUS sub_exp { $$ = $1 - $3; }
-		| sub_exp MUL sub_exp	{ $$ = $1 * $3; }
-        | sub_exp DIV sub_exp { $$ = $1 / $3; }
-    | sub_exp LSHIFT sub_exp	{ $$ = $1 << $3; }
-        | sub_exp RSHIFT sub_exp { $$ = $1 >> $3; }
-    | sub_exp AND sub_exp	{ $$ = $1 && $3; }
-        | sub_exp OR sub_exp { $$ = $1 || $3; }
-    | sub_exp BIT_AND sub_exp	{ $$ = $1 & $3; }
-        | sub_exp BIT_OR sub_exp { $$ = $1 | $3; }
-    | sub_exp BIT_XOR sub_exp { $$ = $1 ^ $3; }
-        | sub_exp EQEQ sub_exp { $$ = $1 == $3; }
-    | sub_exp NEQ sub_exp { $$ = $1 != $3; }
-        | sub_exp GT sub_exp { $$ = $1 > $3; }
-    | sub_exp LT sub_exp { $$ = $1 < $3; }
-        | sub_exp GE sub_exp { $$ = $1 >= $3; }
-    | sub_exp LE sub_exp { $$ = $1 <= $3; }
-        | NOT sub_exp { $$  = !$2; }
-		;
- 
 
 %%
 
