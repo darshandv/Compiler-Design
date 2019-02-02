@@ -3,13 +3,19 @@
 */
 /* Definition section */
 %{
+    #define LEXER_FILE
     #define NRML  "\x1B[0m"
     #define RED  "\x1B[31m"
     #define BLUE   "\x1B[34m"
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
-    #include "y.tab.h"
+    //#include "symbolTable.h"
+    #include "share_symbol.h"
+    
+    
+
+    // stEntry ** constant_table, ** symbol_table;
     
     
     int comment_strt =0;

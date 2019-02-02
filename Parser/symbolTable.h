@@ -1,6 +1,10 @@
+#ifndef SYMBOL_TABLE
+#define SYMBOL_TABLE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 #define TABLE_SIZE 150
 
@@ -118,6 +122,8 @@ void display(stEntry** hash_table){
 	}
 	printf("\n=============================================================\n");
 }
+
+#endif
 
 
 

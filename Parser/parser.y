@@ -1,12 +1,13 @@
 %{
+#define YACC_FILE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "symbolTable.h"
+//#include "symbolTable.h"
 #include "share_symbol.h"
 stEntry ** constant_table, ** symbol_table;
-int yylex();
+ int yylex();
 void yyerror(const char *s);
 
 

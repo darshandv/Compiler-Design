@@ -64,20 +64,21 @@
 /* Copy the first part of user declarations.  */
 #line 1 "parser.y" /* yacc.c:339  */
 
+#define YACC_FILE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "symbolTable.h"
+//#include "symbolTable.h"
 #include "share_symbol.h"
 stEntry ** constant_table, ** symbol_table;
-int yylex();
+ int yylex();
 void yyerror(const char *s);
 
 
 
 
-#line 81 "y.tab.c" /* yacc.c:339  */
+#line 82 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -239,13 +240,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 16 "parser.y" /* yacc.c:355  */
+#line 17 "parser.y" /* yacc.c:355  */
 
     stEntry* entry;
     double fraction;
     long val;
 
-#line 249 "y.tab.c" /* yacc.c:355  */
+#line 250 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -262,7 +263,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 266 "y.tab.c" /* yacc.c:358  */
+#line 267 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -565,7 +566,7 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    78,    78,    78,    80,    82,    82
+       0,    79,    79,    79,    81,    83,    83
 };
 #endif
 
@@ -1346,7 +1347,7 @@ yyreduce:
   switch (yyn)
     {
       
-#line 1350 "y.tab.c" /* yacc.c:1646  */
+#line 1351 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1574,7 +1575,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 126 "parser.y" /* yacc.c:1906  */
+#line 127 "parser.y" /* yacc.c:1906  */
 
 
 void yyerror (char const *s) {
