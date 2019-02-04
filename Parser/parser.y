@@ -117,10 +117,10 @@ sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
 assignment_exp: IDENTIFIER EQ value_exp;
-value_exp: IDENTIFIER | INTEGER_CONSTANT | FLOATING_CONSTANT; 
+value_exp: IDENTIFIER | constant | CHARACTER_CONSTANT | STRING_CONSTANT; 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | start_state | ;
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | start_state  ;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 

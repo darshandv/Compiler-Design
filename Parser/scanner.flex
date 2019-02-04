@@ -96,9 +96,9 @@ STRING \"([^\\\"]|\\.)*\"
 
   /* Strings */
 \"([^\\\"]|\\.)* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal String", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-\"([^\\\"]|\\.)*\" { return STRING_CONSTANT;insert(constant_table,yytext,STRING_CONSTANT, INT_MAX);}
+\"([^\\\"]|\\.)*\" { insert(constant_table,yytext,STRING_CONSTANT, INT_MAX);return STRING_CONSTANT;}
 
-\'([^\\\"]|\\.)\' { return CHARACTER_CONSTANT;insert(constant_table,yytext,CHARACTER_CONSTANT, INT_MAX); }
+\'([^\\\"]|\\.)\' { insert(constant_table,yytext,CHARACTER_CONSTANT, INT_MAX); return CHARACTER_CONSTANT; }
  \''             {printf("\n%s%30s%30s%30s%d\n", RED,  "Empty character constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
