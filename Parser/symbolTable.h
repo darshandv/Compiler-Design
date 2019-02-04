@@ -37,7 +37,7 @@ stEntry** new_table(){
 	stEntry** table_ptr = NULL;
 	int i=0;
 
-	if(!(table_ptr = malloc(sizeof(stEntry*) * TABLE_SIZE)))
+	if(!(table_ptr = (stEntry **)malloc(sizeof(stEntry*) * TABLE_SIZE)))
 		return NULL;
 
 	for(;i<TABLE_SIZE;i++){
@@ -51,7 +51,7 @@ stEntry* new_entry(char *lexeme, int token, int value)
 {
 	stEntry *new_entry = NULL;
 
-	if(!(new_entry = malloc(sizeof(stEntry))))
+	if(!(new_entry = (stEntry *) malloc(sizeof(stEntry))))
 		return NULL;
 
 	if((new_entry->lexeme = strdup(lexeme))==NULL)

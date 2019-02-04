@@ -29,6 +29,9 @@ void yyerror(const char *s);
 %token <fraction> FLOATING_CONSTANT
 %token <ival> HEXADECIMAL_CONSTANT
 %token <ival> OCTAL_CONSTANT
+%token <entry> STRING_CONSTANT
+%token <entry> CHARACTER_CONSTANT
+
 
 
 
@@ -59,15 +62,10 @@ void yyerror(const char *s);
 /* Comments */
 %token SINGLE_LINE
 
-/* Constants */ 
-%token STRING_CONSTANT
-
- 
 %type <fraction> exp 
 %type <fraction> sub_exp
 %type <ival> binary_exp
 %type <fraction> arithmetic_exp
-
 %type <fraction> relational_exp
 %type <fraction> logical_exp
 
@@ -121,7 +119,7 @@ assignment_exp: IDENTIFIER EQ value_exp;
 value_exp: IDENTIFIER | INTEGER_CONSTANT | FLOATING_CONSTANT; 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call | ;
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON |  ;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
@@ -130,19 +128,20 @@ statement: statement statement_type | ;
 if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type | IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ELSE statement_type ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
-
+/*
 function_call: IDENTIFIER OPEN_PARENTHESIS args_call CLOSE_PARENTHESIS SEMICOLON;
 
 args_call: args_call COMMA args_call_def | args_call_def | ;
 
 args_call_def: IDENTIFIER | INTEGER_CONSTANT | FLOATING_CONSTANT | OCTAL_CONSTANT | STRING_CONSTANT | HEXADECIMAL_CONSTANT ;
+*/
 
 exp: exp ',' sub_exp { $$ = $1,$3;} | sub_exp { $$ = $1;};
 
-sub_exp: logical_exp {printf("Result: %lf\n", $1);}
-        | binary_exp {printf("Result: %d\n", $1);}
-        | relational_exp {printf("Result: %lf\n", $1);}
-        | arithmetic_exp {printf("Result: %lf\n", $1);}
+sub_exp: logical_exp 
+        | binary_exp 
+        | relational_exp 
+        | arithmetic_exp 
         | assignment_exp 
 		;
  
@@ -189,8 +188,6 @@ relational_exp: relational_exp EQEQ relational_exp { $$ = $1 == $3; }
                 | OCTAL_CONSTANT { $$ = $1 ;}
                 | HEXADECIMAL_CONSTANT { $$ = $1 ;}
                 ;
-
-assignment_exp: ;
 
 %%
 
