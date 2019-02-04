@@ -50,7 +50,7 @@ STRING \"([^\\\"]|\\.)*\"
 "/*"                              {comment_strt = yylineno; BEGIN comment;}
 <comment>.|[ ]                      ;
 <comment>\n                          {yylineno++;}
-<comment>"*/"                        {BEGIN INITIAL;}
+<comment>"*/"                        {return MULTI_LINE; BEGIN INITIAL;}
 <comment>"/*"                        {}
 <comment><<EOF>>                     {yyterminate();}
  /* Single Line Comment */ 
@@ -68,9 +68,9 @@ STRING \"([^\\\"]|\\.)*\"
 #include{SPACE}*\"{ALPHA}+\.?{ALPHA}+\"{SPACE}*[;] { printf("\n%s%30s%30s%30s%d\n", RED, "Illegal preprocessing detective. Ended with semicolon at", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 #include[^\n]* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal preprocessing directive ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
  /* #define statements */
-#define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+({PLUS}|{NEG})?{DIGIT}*{DOT}{DIGIT}+[^;] { printf("\n%30s%30s%30s%d%30s%d\n", "MACRO", yytext, "Line Number:", yylineno, "Token Number:",DEF );}
-#define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{DIGIT}+[^;]                             { printf("\n%30s%30s%30s%d%30s%d\n", "MACRO", yytext, "Line Number:", yylineno, "Token Number:",DEF );}
-#define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{ALPHA}({ALPHA}|{UND}|{DIGIT})*[^;]      { printf("\n%30s%30s%30s%d%30s%d\n", "MACRO", yytext, "Line Number:", yylineno, "Token Number:",DEF); }
+#define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+({PLUS}|{NEG})?{DIGIT}*{DOT}{DIGIT}+[^;] {return DEF;}
+#define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{DIGIT}+[^;]                             { return DEF ;}
+#define{SPACE}+{ALPHA}({ALPHA}|{DIGIT}|{UND})*{SPACE}+{ALPHA}({ALPHA}|{UND}|{DIGIT})*[^;]      { return DEF; }
 
 
  /* Illegal #define statements */ 
@@ -102,9 +102,9 @@ STRING \"([^\\\"]|\\.)*\"
  \''             {printf("\n%s%30s%30s%30s%d\n", RED,  "Empty character constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
-0([x|X])({DIGIT}|[a-fA-F])+    {yylval.val=strtol(yytext,0,16);return HEXADECIMAL_CONSTANT ;insert(constant_table,yytext,HEXADECIMAL_CONSTANT, INT_MAX);}
+0([x|X])({DIGIT}|[a-fA-F])+    {yylval.val=strtol(yytext,0,16);return HEXADECIMAL_CONSTANT ;insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX);}
 0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 8); return OCTAL_CONSTANT;}
+0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 8); return INTEGER_CONSTANT;}
 0([0-9])+   { printf("\n%s%30s%30s%30s%d\n", RED,  "  Illegal octal constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 {PLUS}?{DIGIT}*{DOT}{DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
 {NEG}{DIGIT}*{DOT}{DIGIT}+   {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}

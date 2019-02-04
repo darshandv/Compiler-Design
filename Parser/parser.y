@@ -60,7 +60,7 @@ void yyerror(const char *s);
 %token COMMA SEMICOLON OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACE CLOSE_BRACE OPEN_SQR_BKT CLOSE_SQR_BKT
 
 /* Comments */
-%token SINGLE_LINE
+%token SINGLE_LINE MULTI_LINE
 
 %type <fraction> exp 
 %type <fraction> sub_exp
@@ -68,6 +68,7 @@ void yyerror(const char *s);
 %type <fraction> arithmetic_exp
 %type <fraction> relational_exp
 %type <fraction> logical_exp
+%type <fraction> constant
 
 %left COMMA
 %left OR
@@ -84,13 +85,13 @@ void yyerror(const char *s);
 
 %%
 
-start_state: start_state option | option ;
+start_state:  option start_state | option ;
 
 option:  function | declaration | preprocessor_directive | comments;
 
 preprocessor_directive: INCLUDE | DEF;
 
-comments: SINGLE_LINE;
+comments: SINGLE_LINE | MULTI_LINE;
 
 function: function_decl | function_def;
 
@@ -99,8 +100,8 @@ function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMIC
 function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE function_body CLOSE_BRACE;
 
 function_body: declaration | 
-               statement |
-               function_body function_body;
+               statement_type |
+               function_body function_body | ;
 
 args: args COMMA args_def |
       args_def |
@@ -119,61 +120,39 @@ assignment_exp: IDENTIFIER EQ value_exp;
 value_exp: IDENTIFIER | INTEGER_CONSTANT | FLOATING_CONSTANT; 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON |  ;
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | start_state | ;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
 statement: statement statement_type | ;
 
-if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type | IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ELSE statement_type ;
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
-/*
-function_call: IDENTIFIER OPEN_PARENTHESIS args_call CLOSE_PARENTHESIS SEMICOLON;
 
-args_call: args_call COMMA args_call_def | args_call_def | ;
-
-args_call_def: IDENTIFIER | INTEGER_CONSTANT | FLOATING_CONSTANT | OCTAL_CONSTANT | STRING_CONSTANT | HEXADECIMAL_CONSTANT ;
-*/
-
-exp: exp ',' sub_exp { $$ = $1,$3;} | sub_exp { $$ = $1;};
+exp: sub_exp COMMA exp { $$ = $1,$3;} | sub_exp | OPEN_PARENTHESIS sub_exp CLOSE_PARENTHESIS;
 
 sub_exp: logical_exp 
         | binary_exp 
         | relational_exp 
         | arithmetic_exp 
-        | assignment_exp 
 		;
  
 arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
-                | INTEGER_CONSTANT { $$ = $1; }
-                | FLOATING_CONSTANT { $$ = $1 ;}
-                | OCTAL_CONSTANT { $$ = $1 ;}
-                | HEXADECIMAL_CONSTANT { $$ = $1 ;}
-                | IDENTIFIER { $$ = $1->value; }
+                | constant
+                | IDENTIFIER 
                 ;
-
-logical_exp:    sub_exp AND sub_exp	{ $$ = $1 && $3; }
-                | sub_exp OR sub_exp { $$ = $1 || $3; }
-                | NOT sub_exp { $$  = !$2; }
-                | INTEGER_CONSTANT { $$ = $1; }
-                | FLOATING_CONSTANT { $$ = $1 ;}
-                | OCTAL_CONSTANT { $$ = $1 ;}
-                | HEXADECIMAL_CONSTANT { $$ = $1 ;}
-                | IDENTIFIER { $$ = $1->value; }
-                ;
-
 binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp BIT_OR binary_exp { $$ = $1 | $3; }
             | binary_exp BIT_XOR binary_exp { $$ = $1 ^ $3; }
             | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
             | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
             | binary_exp MOD binary_exp { $$ = $1 % $3; }
-            | INTEGER_CONSTANT { $$ = $1; }
-            | IDENTIFIER { $$ = $1->value; }
+            | INTEGER_CONSTANT { $$ = $1;}
+            | IDENTIFIER
             ;
 
 relational_exp: relational_exp EQEQ relational_exp { $$ = $1 == $3; }
@@ -182,20 +161,23 @@ relational_exp: relational_exp EQEQ relational_exp { $$ = $1 == $3; }
                 | relational_exp LT relational_exp { $$ = $1 < $3; }
                 | relational_exp GE relational_exp { $$ = $1 >= $3; }
                 | relational_exp LE relational_exp { $$ = $1 <= $3; }
-                | IDENTIFIER { $$ = $1->value; }
-                | INTEGER_CONSTANT { $$ = $1 ;}
-                | FLOATING_CONSTANT { $$ = $1 ;}
-                | OCTAL_CONSTANT { $$ = $1 ;}
-                | HEXADECIMAL_CONSTANT { $$ = $1 ;}
+                | arithmetic_exp
                 ;
 
+logical_exp:    logical_exp AND logical_exp	{ $$ = $1 && $3; }
+                | logical_exp OR logical_exp { $$ = $1 || $3; }
+                | NOT logical_exp { $$  = !$2; }
+                | arithmetic_exp
+                ;
+
+constant: FLOATING_CONSTANT { $$ = $1 ;}
+                | INTEGER_CONSTANT { $$ = $1;}
 %%
 
 void yyerror (char const *s) {
 
     extern int yylineno;
-    extern char *yytext;
-    printf ("ERROR: %s at symbol: %s Line Number: %d\n", s,yytext,yylineno);
+    printf("%s at line number: %d\n",s,yylineno-1);
  }
 
 int main(int argc, char *argv[])
