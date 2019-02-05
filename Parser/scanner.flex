@@ -50,9 +50,9 @@ STRING \"([^\\\"]|\\.)*\"
 "/*"                              {comment_strt = yylineno; BEGIN comment;}
 <comment>.|[ ]                      ;
 <comment>\n                          {yylineno++;}
-<comment>"*/"                        {return MULTI_LINE; BEGIN INITIAL;}
-<comment>"/*"                        {}
-<comment><<EOF>>                     {yyterminate();}
+<comment>"*/"                        { BEGIN INITIAL;return MULTI_LINE;}
+<comment>"/*"                        {printf("\n%s%30s%30s%30s%d\n", RED,  "Nested comment", yytext ,"Line Number:", yylineno-1);printf("%s", NRML);yylineno--;yyterminate();}
+<comment><<EOF>>                     {printf("\n%s%30s%30s%30s%d\n", RED,  "Unterminated comment", yytext ,"Line Number:", yylineno-1);printf("%s", NRML);yylineno--;yyterminate();}
  /* Single Line Comment */ 
 \/\/(.)*[\n]  {return SINGLE_LINE;}
 

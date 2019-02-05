@@ -19,6 +19,7 @@ void yyerror(const char *s);
     double fraction;
     long val;
     int ival;
+    char *st;
 }
 
 %start start_state
@@ -29,7 +30,7 @@ void yyerror(const char *s);
 %token <fraction> FLOATING_CONSTANT
 %token <ival> HEXADECIMAL_CONSTANT
 %token <ival> OCTAL_CONSTANT
-%token <entry> STRING_CONSTANT
+%token <st> STRING_CONSTANT
 %token <entry> CHARACTER_CONSTANT
 
 
@@ -66,8 +67,8 @@ void yyerror(const char *s);
 %type <fraction> exp_type
 %type <ival> binary_exp
 %type <fraction> arithmetic_exp
-%type <fraction> non_bitwise_constant
-%type <ival> bitwise_legal_constant
+%type <fraction> float_constant
+%type <ival> int_constant
 %type <entry> id
 
 %left COMMA
@@ -97,7 +98,7 @@ function: function_decl | function_def;
 
 function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON;
 
-function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE statement_type CLOSE_BRACE;
+function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE statement CLOSE_BRACE;
 
 args: args COMMA args_def |
       args_def |
@@ -107,12 +108,12 @@ args_def: datatype IDENTIFIER;
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
-decl: IDENTIFIER | assignment_exp;
+decl: id | assignment_exp;
 datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: IDENTIFIER EQ bitwise_legal_constant | IDENTIFIER EQ non_bitwise_constant;
+assignment_exp: id EQ int_constant | id EQ float_constant;
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | start_state  ;
@@ -125,7 +126,7 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type | OPEN_PARENTHESIS exp_type CLOSE_PARENTHESIS;
+exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type ;
 
 exp_type: sub_exp | binary_exp;
 
@@ -145,8 +146,8 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
-                | non_bitwise_constant
-                | bitwise_legal_constant
+                | float_constant
+                | int_constant
                 | id 
                 ;
 binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
@@ -155,17 +156,16 @@ binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
             | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
             | binary_exp MOD binary_exp { $$ = $1 % $3; }
-            | bitwise_legal_constant
+            | int_constant
             | id
             ;
 
 
-bitwise_legal_constant: INTEGER_CONSTANT { $$ = $1;}
+int_constant: INTEGER_CONSTANT { $$ = $1;}
             | CHARACTER_CONSTANT { $$ = $1; }
             ;
 
-non_bitwise_constant: FLOATING_CONSTANT { $$ = $1;}
-                        | STRING_CONSTANT { $$ = $1; }
+float_constant: FLOATING_CONSTANT { $$ = $1;}
                         ;
 
 id: IDENTIFIER;

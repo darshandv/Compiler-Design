@@ -15,14 +15,10 @@ int main(){
     here
     */
     float f = 12.4;
-    while(a + -24){
+    while(a + (b-24)){
         int abcd = 10;
     } 
 
-    if( !a )
-    {
-        break;
-    }
     // Comment
 
     short planned = 0;

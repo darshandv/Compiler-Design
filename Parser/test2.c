@@ -8,9 +8,9 @@ int main(){
         int abcd = 10;
     } 
     // Comment
+    /* Heelo
+    hahahah */
 
     short planned = 0;
-    int func(int a){
-        return a;
-    }
+    /*
 }
