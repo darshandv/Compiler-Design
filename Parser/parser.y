@@ -84,6 +84,9 @@ void yyerror(const char *s);
 %left MUL DIV MOD
 %right NOT
 
+%nonassoc IFX
+%nonassoc ELSE
+
 %%
 
 start_state:  option start_state | option ;
@@ -108,25 +111,25 @@ args_def: datatype IDENTIFIER;
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
-decl: id | assignment_exp;
+decl: id | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT | assignment_exp;
 datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ int_constant | id EQ float_constant;
+assignment_exp: id EQ int_constant | id EQ float_constant  ;
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | start_state  ;
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function | declaration | preprocessor_directive | comments  ;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
 statement: statement statement_type | ;
 
-if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ;
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX| IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ELSE statement_type ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type ;
+exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type | OPEN_PARENTHESIS exp CLOSE_PARENTHESIS { $$ = $2;};
 
 exp_type: sub_exp | binary_exp;
 
@@ -146,6 +149,11 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
+                | arithmetic_exp PLUSEQ arithmetic_exp { $$ = $1 + $3; }
+                | arithmetic_exp MINUSEQ arithmetic_exp {  $$ = $1 = $1 - $3; }
+                | arithmetic_exp MULEQ arithmetic_exp {  $$ = $1 = $1 * $3; }
+                | arithmetic_exp DIVEQ arithmetic_exp {  $$ = $1 = $1 / $3; }
+                | arithmetic_exp MODEQ arithmetic_exp {  $$ = $1 = (int)$1 % (int)$3; }
                 | float_constant
                 | int_constant
                 | id 

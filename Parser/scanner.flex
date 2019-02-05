@@ -124,7 +124,7 @@ STRING \"([^\\\"]|\\.)*\"
 {NEG}{DIGIT}+                {insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
 
 ({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{IDENTIFIER}                 {insert(symbol_table,yytext,IDENTIFIER, INT_MAX);return IDENTIFIER;}
+{IDENTIFIER}                 {yylval.entry = insert(symbol_table,yytext,IDENTIFIER, INT_MAX);return IDENTIFIER;}
 
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
