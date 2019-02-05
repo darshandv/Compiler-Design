@@ -7,7 +7,7 @@
 //#include "symbolTable.h"
 #include "share_symbol.h"
 stEntry ** constant_table, ** symbol_table;
- int yylex();
+int yylex();
 void yyerror(const char *s);
 
 
@@ -34,10 +34,6 @@ void yyerror(const char *s);
 
 
 
-
-/* Preprocessing Directive Tokens */
-%token INCLUDE DEF
-
 /* Data Type Tokens */
 %token CHAR SHORT INT LONG LONG_LONG FLOAT SIGNED UNSIGNED
 
@@ -62,13 +58,17 @@ void yyerror(const char *s);
 /* Comments */
 %token SINGLE_LINE MULTI_LINE
 
+/* Preprocessor directives */
+%token INCLUDE DEF
+
 %type <fraction> exp 
 %type <fraction> sub_exp
+%type <fraction> exp_type
 %type <ival> binary_exp
 %type <fraction> arithmetic_exp
-%type <fraction> relational_exp
-%type <fraction> logical_exp
-%type <fraction> constant
+%type <fraction> non_bitwise_constant
+%type <ival> bitwise_legal_constant
+%type <entry> id
 
 %left COMMA
 %left OR
@@ -97,11 +97,7 @@ function: function_decl | function_def;
 
 function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON;
 
-function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE function_body CLOSE_BRACE;
-
-function_body: declaration | 
-               statement_type |
-               function_body function_body | ;
+function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE statement_type CLOSE_BRACE;
 
 args: args COMMA args_def |
       args_def |
@@ -116,8 +112,7 @@ datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: IDENTIFIER EQ value_exp;
-value_exp: IDENTIFIER | constant | CHARACTER_CONSTANT | STRING_CONSTANT; 
+assignment_exp: IDENTIFIER EQ bitwise_legal_constant | IDENTIFIER EQ non_bitwise_constant;
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | start_state  ;
@@ -130,11 +125,19 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: sub_exp COMMA exp { $$ = $1,$3;} | sub_exp | OPEN_PARENTHESIS sub_exp CLOSE_PARENTHESIS;
+exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type | OPEN_PARENTHESIS exp_type CLOSE_PARENTHESIS;
 
-sub_exp: logical_exp 
-        | binary_exp 
-        | relational_exp 
+exp_type: sub_exp | binary_exp;
+
+sub_exp: sub_exp AND sub_exp	{ $$ = $1 && $3; }
+        | sub_exp OR sub_exp { $$ = $1 || $3; }
+        | NOT sub_exp { $$  = !$2; }
+        | sub_exp EQEQ sub_exp { $$ = $1 == $3; }
+        | sub_exp NEQ sub_exp { $$ = $1 != $3; }
+        | sub_exp GT sub_exp { $$ = $1 > $3; }
+        | sub_exp LT sub_exp { $$ = $1 < $3; }
+        | sub_exp GE sub_exp { $$ = $1 >= $3; }
+        | sub_exp LE sub_exp { $$ = $1 <= $3; }
         | arithmetic_exp 
 		;
  
@@ -142,8 +145,9 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
-                | constant
-                | IDENTIFIER 
+                | non_bitwise_constant
+                | bitwise_legal_constant
+                | id 
                 ;
 binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp BIT_OR binary_exp { $$ = $1 | $3; }
@@ -151,33 +155,26 @@ binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
             | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
             | binary_exp MOD binary_exp { $$ = $1 % $3; }
-            | INTEGER_CONSTANT { $$ = $1;}
-            | IDENTIFIER
+            | bitwise_legal_constant
+            | id
             ;
 
-relational_exp: relational_exp EQEQ relational_exp { $$ = $1 == $3; }
-                | relational_exp NEQ relational_exp { $$ = $1 != $3; }
-                | relational_exp GT relational_exp { $$ = $1 > $3; }
-                | relational_exp LT relational_exp { $$ = $1 < $3; }
-                | relational_exp GE relational_exp { $$ = $1 >= $3; }
-                | relational_exp LE relational_exp { $$ = $1 <= $3; }
-                | arithmetic_exp
-                ;
 
-logical_exp:    logical_exp AND logical_exp	{ $$ = $1 && $3; }
-                | logical_exp OR logical_exp { $$ = $1 || $3; }
-                | NOT logical_exp { $$  = !$2; }
-                | arithmetic_exp
-                ;
+bitwise_legal_constant: INTEGER_CONSTANT { $$ = $1;}
+            | CHARACTER_CONSTANT { $$ = $1; }
+            ;
 
-constant: FLOATING_CONSTANT { $$ = $1 ;}
-                | INTEGER_CONSTANT { $$ = $1;}
+non_bitwise_constant: FLOATING_CONSTANT { $$ = $1;}
+                        | STRING_CONSTANT { $$ = $1; }
+                        ;
+
+id: IDENTIFIER;
 %%
 
 void yyerror (char const *s) {
 
     extern int yylineno;
-    printf("%s at line number: %d\n",s,yylineno-1);
+    printf("Error message: %s Line no: %d \n", s, yylineno);
  }
 
 int main(int argc, char *argv[])
