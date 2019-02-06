@@ -24,7 +24,6 @@ int main(){
     
     if (a!=5) {
         int k = 0;
-        k+=5;
     }
     else if(b<5){
         
