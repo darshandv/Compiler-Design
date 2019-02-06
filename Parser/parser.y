@@ -14,6 +14,10 @@ void yyerror(const char *s);
 
 %}
 
+%define parse.lac full
+%define parse.error verbose
+
+
 %union {
     stEntry* entry;
     double fraction;
