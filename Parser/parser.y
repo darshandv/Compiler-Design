@@ -9,10 +9,11 @@
 stEntry ** constant_table, ** symbol_table;
 int yylex();
 void yyerror(const char *s);
-double Evaluate (double lhs_value,int assign_type,double rhs_value);
-
-
 %}
+
+%define parse.lac full
+%define parse.error verbose
+
 
 %union {
     stEntry* entry;
@@ -67,12 +68,9 @@ double Evaluate (double lhs_value,int assign_type,double rhs_value);
 %type <fraction> exp_type
 %type <ival> binary_exp
 %type <fraction> arithmetic_exp
-%type <fraction> assignment_exp
 %type <fraction> float_constant
 %type <ival> int_constant
 %type <entry> id
-%type <ival> assign_op
-%type <fraction> unary_expr
 
 %left COMMA
 %right PLUSEQ MINUSEQ MULEQ DIVEQ MODEQ
@@ -105,7 +103,7 @@ function: function_decl | function_def;
 
 function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON;
 
-function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS block_statement;
+function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE statement CLOSE_BRACE;
 
 args: args COMMA args_def |
       args_def |
@@ -120,25 +118,12 @@ datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id assign_op arithmetic_exp     {$$ = $1->value = Evaluate($1->value,$2,$3);}
-    |id assign_op id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT  {$$ = 0;}
-	|id assign_op unary_expr                      {$$ = $1->value = Evaluate($1->value,$2,$3);}
-	|unary_expr assign_op unary_expr               {$$ = 0;}
-    ;
-
-assign_op: EQ                                      {$$ = EQ;}
-    |PLUSEQ                                   {$$ = PLUSEQ;}
-    |MINUSEQ                                    {$$ = MINUSEQ;}
-    |MULEQ                                    {$$ = MULEQ;}
-    |DIVEQ                                    {$$ = DIVEQ;}
-    |MODEQ                                    {$$ = MODEQ;}
-;
-
-unary_expr:	id INC  {$$ = $1->value = ($1->value)++;}
-	        |id DEC  {$$ = $1->value = ($1->value)--;}
-	        |DEC id  {$$ = $2->value = --($2->value);}
-            |INC id {$$ = $2->value = ++($2->value);}
-            ;
+assignment_exp: id EQ int_constant | id EQ float_constant | 
+                id PLUSEQ arithmetic_exp { $1->value = $1->value + $3; }
+                | id MINUSEQ arithmetic_exp {  $1->value = $1->value - $3; }
+                | id MULEQ arithmetic_exp {  $1->value = $1->value * $3; }
+                | id DIVEQ arithmetic_exp {  $1->value = $1->value / $3; }
+                | id MODEQ arithmetic_exp {  $1->value = (int)$1 % (int)$3; }  ;
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | 
@@ -166,8 +151,6 @@ sub_exp: sub_exp AND sub_exp	{ $$ = $1 && $3; }
         | sub_exp GE sub_exp { $$ = $1 >= $3; }
         | sub_exp LE sub_exp { $$ = $1 <= $3; }
         | arithmetic_exp 
-        | unary_expr {$$ = $1;}
-        | assignment_exp
 		;
  
 arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
@@ -197,30 +180,11 @@ float_constant: FLOATING_CONSTANT { $$ = $1;}
                         ;
 
 id: IDENTIFIER;
-
-
 %%
-
-double Evaluate (double lhs_value,int assign_type,double rhs_value)
-{
-	switch(assign_type)
-	{
-		case EQ: return rhs_value;
-		case PLUSEQ: return (lhs_value + rhs_value);
-		case MINUSEQ: return (lhs_value - rhs_value);
-		case MULEQ: return (lhs_value * rhs_value);
-		case DIVEQ: return (lhs_value / rhs_value);
-		case MODEQ: return ((int)lhs_value % (int)rhs_value);
-	}
-}
-
-
 void yyerror (char const *s) {
-
     extern int yylineno;
     printf("Error message: %s Line no: %d \n", s, yylineno);
  }
-
 int main(int argc, char *argv[])
 {
     extern FILE *yyin;
