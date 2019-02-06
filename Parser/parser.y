@@ -14,10 +14,6 @@ double Evaluate (double lhs_value,int assign_type,double rhs_value);
 
 %}
 
-%define parse.lac full
-%define parse.error verbose
-
-
 %union {
     stEntry* entry;
     double fraction;
