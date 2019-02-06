@@ -72,6 +72,7 @@ void yyerror(const char *s);
 %type <ival> int_constant
 %type <entry> id
 
+
 %left COMMA
 %right PLUSEQ MINUSEQ MULEQ DIVEQ MODEQ
 %left OR
@@ -85,6 +86,7 @@ void yyerror(const char *s);
 %left PLUS MINUS
 %left MUL DIV MOD
 %right NOT
+%left INC DEC
 
 %nonassoc IFX
 %nonassoc ELSE
@@ -113,21 +115,24 @@ args_def: datatype IDENTIFIER;
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
-decl: id | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT | assignment_exp;
+decl: id | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |id EQ int_constant | id EQ float_constant |;
 datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ int_constant | id EQ float_constant | 
-                id PLUSEQ arithmetic_exp { $1->value = $1->value + $3; }
-                | id MINUSEQ arithmetic_exp {  $1->value = $1->value - $3; }
-                | id MULEQ arithmetic_exp {  $1->value = $1->value * $3; }
-                | id DIVEQ arithmetic_exp {  $1->value = $1->value / $3; }
-                | id MODEQ arithmetic_exp {  $1->value = (int)$1 % (int)$3; }  ;
+assignment_exp: id EQ assignment_options |
+                id PLUSEQ assignment_options 
+                | id MINUSEQ assignment_options 
+                | id MULEQ  assignment_options
+                | id DIVEQ assignment_options
+                | id MODEQ assignment_options;
+                
+
+assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | 
-                    function | declaration | preprocessor_directive | comments   ;
+                    function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
@@ -170,6 +175,8 @@ binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | int_constant
             | id
             ;
+
+inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 
 int_constant: INTEGER_CONSTANT { $$ = $1;}
