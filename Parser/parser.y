@@ -72,6 +72,7 @@ void yyerror(const char *s);
 %type <entry> id
 
 %left COMMA
+%right PLUSEQ MINUSEQ MULEQ DIVEQ MODEQ
 %left OR
 %left AND
 %left BIT_OR
@@ -116,10 +117,16 @@ datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ int_constant | id EQ float_constant  ;
+assignment_exp: id EQ int_constant | id EQ float_constant | 
+                id PLUSEQ arithmetic_exp { $1->value = $1->value + $3; }
+                | id MINUSEQ arithmetic_exp {  $1->value = $1->value - $3; }
+                | id MULEQ arithmetic_exp {  $1->value = $1->value * $3; }
+                | id DIVEQ arithmetic_exp {  $1->value = $1->value / $3; }
+                | id MODEQ arithmetic_exp {  $1->value = (int)$1 % (int)$3; }  ;
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function | declaration | preprocessor_directive | comments  ;
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | 
+                    function | declaration | preprocessor_directive | comments   ;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
@@ -149,11 +156,6 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
-                | arithmetic_exp PLUSEQ arithmetic_exp { $$ = $1 + $3; }
-                | arithmetic_exp MINUSEQ arithmetic_exp {  $$ = $1 = $1 - $3; }
-                | arithmetic_exp MULEQ arithmetic_exp {  $$ = $1 = $1 * $3; }
-                | arithmetic_exp DIVEQ arithmetic_exp {  $$ = $1 = $1 / $3; }
-                | arithmetic_exp MODEQ arithmetic_exp {  $$ = $1 = (int)$1 % (int)$3; }
                 | float_constant
                 | int_constant
                 | id 
