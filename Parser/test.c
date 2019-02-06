@@ -10,16 +10,13 @@ int main(){
     int e = 30;
     char asdf = 'x';
     int peak[9];
-    /* Comment
-    here
-    here and
-    here
-    */
+
     float f = 12.4;
-    while(b>2){
+    while((a>3) || ((b>2) > (b<5)) && (a>3)){
         int abcd = 10;
     } 
 
+    hi(abcd);
     // Comment
     
     if (a!=5) {

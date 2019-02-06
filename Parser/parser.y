@@ -111,7 +111,9 @@ args: args COMMA args_def |
       args_def |
       ;
 
-args_def: datatype IDENTIFIER;
+args_def: datatype id;
+
+args_call_def: id COMMA args_call_def | id |; 
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
@@ -131,8 +133,10 @@ assignment_exp: id EQ assignment_options |
 assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | 
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON;
+
+function_call: id OPEN_PARENTHESIS args_call_def CLOSE_PARENTHESIS ;
 
 block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
@@ -142,7 +146,11 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type | OPEN_PARENTHESIS exp CLOSE_PARENTHESIS { $$ = $2;};
+exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type  | exp_par;
+
+exp_par: exp_par OPEN_PARENTHESIS exp_par CLOSE_PARENTHESIS | exp_par exp_par| exp_type | symbol | ;
+
+symbol: AND | OR | EQEQ | GT | LT | GE | LE ;
 
 exp_type: sub_exp | binary_exp;
 
