@@ -9,7 +9,7 @@ int main(){
     while(e>=4){
         int abcd = 10;
     } 
-    if( niggas > 0)
+    if( n > 0)
     {
         return ;
     }

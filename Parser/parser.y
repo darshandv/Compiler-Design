@@ -117,24 +117,26 @@ args_call_def: id COMMA args_call_def | id |;
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
-decl: id | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |id EQ int_constant | id EQ float_constant |;
+decl: id | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp ;
 datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ assignment_options |
-                id PLUSEQ assignment_options 
+assignment_exp: id EQ assignment_options | id EQ exp;
+
+shorthand_exp: id PLUSEQ assignment_options 
                 | id MINUSEQ assignment_options 
                 | id MULEQ  assignment_options
                 | id DIVEQ assignment_options
                 | id MODEQ assignment_options;
+                ;
                 
 
-assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
+assignment_options: int_constant | float_constant | HEXADECIMAL_CONSTANT | OCTAL_CONSTANT | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call SEMICOLON | 
-                    function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON;
+                    function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
 function_call: id OPEN_PARENTHESIS args_call_def CLOSE_PARENTHESIS ;
 
@@ -170,9 +172,7 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
                 | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
 		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
                 | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
-                | float_constant
-                | int_constant
-                | id 
+                | assignment_options
                 ;
 binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
             | binary_exp BIT_OR binary_exp { $$ = $1 | $3; }
