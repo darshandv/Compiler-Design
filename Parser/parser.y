@@ -152,7 +152,7 @@ exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type  | exp_par;
 
 exp_par: exp_par OPEN_PARENTHESIS exp_par CLOSE_PARENTHESIS | exp_par exp_par| exp_type | symbol | ;
 
-symbol: AND | OR | EQEQ | GT | LT | GE | LE ;
+symbol: AND | OR | EQEQ | GT | LT | GE | LE | PLUS | MINUS | MUL | DIV | LSHIFT | RSHIFT;
 
 exp_type: sub_exp | binary_exp;
 
