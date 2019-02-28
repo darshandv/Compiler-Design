@@ -164,14 +164,14 @@ binary_exp: binary_exp BIT_AND binary_exp
 inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 
-int_constant: INTEGER_CONSTANT 
-            | CHARACTER_CONSTANT 
-;
+int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_table,$1,INTEGER_CONSTANT, val);}
+            | CHARACTER_CONSTANT {int val = $1[1]; insert(constant_table,$1,INTEGER_CONSTANT, val);};
+                                    
 
 
-float_constant: FLOATING_CONSTANT;
+float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1,FLOATING_CONSTANT, val);};
 
-id: IDENTIFIER;
+id: IDENTIFIER {insert(symbol_table,$1,IDENTIFIER, INT_MAX);}
 %%
 
 

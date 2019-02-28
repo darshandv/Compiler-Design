@@ -47,7 +47,7 @@ stEntry** new_table(){
 }
 
 
-stEntry* new_entry(char *lexeme, int token, int value)
+stEntry* new_entry(char *lexeme, int token, double value)
 {
 	stEntry *new_entry = NULL;
 
@@ -77,7 +77,7 @@ stEntry* search(stEntry** hash_table, char* lexeme){
 	else return key_entry;
 }
 
-stEntry* insert(stEntry** hash_table, char* lexeme, int token, int value){
+stEntry* insert(stEntry** hash_table, char* lexeme, int token, double value){
 	if(search(hash_table, lexeme)!=NULL)
 	{
 		//printf("\nError : Token already exists. Not inserting\n");

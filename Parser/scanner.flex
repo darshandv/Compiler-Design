@@ -16,6 +16,16 @@
     
     int comment_strt =0;
 
+    char *my_itoa(int num, char *str)
+{
+        if(str == NULL)
+        {
+                return NULL;
+        }
+        sprintf(str, "%d", num);
+        return str;
+}
+
     
 %}
 
