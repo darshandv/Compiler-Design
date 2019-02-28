@@ -63,6 +63,14 @@ void yyerror(const char *s);
 /* Preprocessor directives */
 %token INCLUDE DEF
 
+%type <fraction> exp 
+%type <fraction> sub_exp
+%type <fraction> exp_type
+%type <ival> binary_exp
+%type <fraction> arithmetic_exp
+%type <fraction> float_constant
+%type <ival> int_constant
+%type <entry> id
 
 
 %left COMMA
@@ -140,7 +148,7 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: exp_type COMMA exp | exp_type  | exp_par;
+exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type  | exp_par;
 
 exp_par: exp_par OPEN_PARENTHESIS exp_par CLOSE_PARENTHESIS | exp_par exp_par| exp_type | symbol | ;
 
@@ -148,30 +156,30 @@ symbol: AND | OR | EQEQ | GT | LT | GE | LE | PLUS | MINUS | MUL | DIV | LSHIFT 
 
 exp_type: sub_exp | binary_exp;
 
-sub_exp: sub_exp AND sub_exp
-        | sub_exp OR sub_exp
-        | NOT sub_exp
-        | sub_exp EQEQ sub_exp
-        | sub_exp NEQ sub_exp
-        | sub_exp GT sub_exp 
-        | sub_exp LT sub_exp
-        | sub_exp GE sub_exp
-        | sub_exp LE sub_exp
+sub_exp: sub_exp AND sub_exp	{ $$ = $1 && $3; }
+        | sub_exp OR sub_exp { $$ = $1 || $3; }
+        | NOT sub_exp { $$  = !$2; }
+        | sub_exp EQEQ sub_exp { $$ = $1 == $3; }
+        | sub_exp NEQ sub_exp { $$ = $1 != $3; }
+        | sub_exp GT sub_exp { $$ = $1 > $3; }
+        | sub_exp LT sub_exp { $$ = $1 < $3; }
+        | sub_exp GE sub_exp { $$ = $1 >= $3; }
+        | sub_exp LE sub_exp { $$ = $1 <= $3; }
         | arithmetic_exp 
 		;
  
-arithmetic_exp: arithmetic_exp PLUS arithmetic_exp
-                | arithmetic_exp MINUS arithmetic_exp 
-		        | arithmetic_exp MUL arithmetic_exp	
-                | arithmetic_exp DIV arithmetic_exp
+arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
+                | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
+		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
+                | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
                 | assignment_options
                 ;
-binary_exp: binary_exp BIT_AND binary_exp
-            | binary_exp BIT_OR binary_exp 
-            | binary_exp BIT_XOR binary_exp 
-            | binary_exp LSHIFT binary_exp	
-            | binary_exp RSHIFT binary_exp 
-            | binary_exp MOD binary_exp 
+binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
+            | binary_exp BIT_OR binary_exp { $$ = $1 | $3; }
+            | binary_exp BIT_XOR binary_exp { $$ = $1 ^ $3; }
+            | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
+            | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
+            | binary_exp MOD binary_exp { $$ = $1 % $3; }
             | int_constant
             | id
             ;
@@ -179,11 +187,11 @@ binary_exp: binary_exp BIT_AND binary_exp
 inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 
-int_constant: INTEGER_CONSTANT 
-            | CHARACTER_CONSTANT 
+int_constant: INTEGER_CONSTANT { $$ = $1;}
+            | CHARACTER_CONSTANT { $$ = $1; }
             ;
 
-float_constant: FLOATING_CONSTANT
+float_constant: FLOATING_CONSTANT { $$ = $1;}
                         ;
 
 id: IDENTIFIER;
