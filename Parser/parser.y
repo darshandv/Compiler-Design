@@ -25,12 +25,9 @@ void yyerror(const char *s);
 
 %start start_state
 
-%token <val> NUMBER
 %token <entry> IDENTIFIER
 %token <ival> INTEGER_CONSTANT
 %token <fraction> FLOATING_CONSTANT
-%token <ival> HEXADECIMAL_CONSTANT
-%token <ival> OCTAL_CONSTANT
 %token <st> STRING_CONSTANT
 %token <entry> CHARACTER_CONSTANT
 
@@ -124,7 +121,7 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant | float_constant | HEXADECIMAL_CONSTANT | OCTAL_CONSTANT | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
+assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call SEMICOLON | 
@@ -140,11 +137,8 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: exp_type COMMA exp | exp_type  | exp_par;
+exp: exp_type COMMA exp | exp_type;
 
-exp_par: exp_par OPEN_PARENTHESIS exp_par CLOSE_PARENTHESIS | exp_par exp_par| exp_type | symbol | ;
-
-symbol: AND | OR | EQEQ | GT | LT | GE | LE | PLUS | MINUS | MUL | DIV | LSHIFT | RSHIFT;
 
 exp_type: sub_exp | binary_exp;
 
@@ -181,10 +175,10 @@ inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 int_constant: INTEGER_CONSTANT 
             | CHARACTER_CONSTANT 
-            ;
+;
 
-float_constant: FLOATING_CONSTANT
-                        ;
+
+float_constant: FLOATING_CONSTANT;
 
 id: IDENTIFIER;
 %%
