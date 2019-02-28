@@ -3,24 +3,18 @@
 */
 /* Definition section */
 %{
-    #define LEXER_FILE
     #define NRML  "\x1B[0m"
     #define RED  "\x1B[31m"
     #define BLUE   "\x1B[34m"
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
-    #include<limits.h>
-    //#include "symbolTable.h"
-    #include "share_symbol.h"
-    
-    
+    #include <limits.h>
 
-    // stEntry ** constant_table, ** symbol_table;
-    
+    #include "y.tab.h"
+  
     
     int comment_strt =0;
-    // stEntry ** constant_table, **symbol_table;
 
     
 %}
@@ -96,35 +90,31 @@ STRING \"([^\\\"]|\\.)*\"
 
   /* Strings */
 \"([^\\\"]|\\.)* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal String", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-\"([^\\\"]|\\.)*\" { insert(constant_table,yytext,STRING_CONSTANT, INT_MAX);return STRING_CONSTANT;}
+\"([^\\\"]|\\.)*\" {yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return STRING_CONSTANT;} // insert(constant_table,yytext,STRING_CONSTANT, INT_MAX);
 
-\'([^\\\"]|\\.)\' { insert(constant_table,yytext,CHARACTER_CONSTANT, INT_MAX); return CHARACTER_CONSTANT; }
+\'([^\\\"]|\\.)\' {yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return CHARACTER_CONSTANT; } // insert(constant_table,yytext,CHARACTER_CONSTANT, INT_MAX); 
  \''             {printf("\n%s%30s%30s%30s%d\n", RED,  "Empty character constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
   /* Rules for numeric constants needs to be before identifiers otherwise giving error */
-0([x|X])({DIGIT}|[a-fA-F])+    {yylval.val=strtol(yytext,0,16);return HEXADECIMAL_CONSTANT ;insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX);}
-0([x|X])({DIGIT}|[a-zA-Z])+    {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Hexadecimal Constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-0([0-7])+    {insert(constant_table,yytext,OCTAL_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 8); return INTEGER_CONSTANT;}
-0([0-9])+   { printf("\n%s%30s%30s%30s%d\n", RED,  "  Illegal octal constant", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{PLUS}?{DIGIT}*{DOT}{DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
-{NEG}{DIGIT}*{DOT}{DIGIT}+   {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT;}
+{PLUS}?{DIGIT}*{DOT}{DIGIT}+ { yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return FLOATING_CONSTANT;} // insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX); // yylval.fraction = strtof(yytext, NULL);
+{NEG}{DIGIT}*{DOT}{DIGIT}+   { yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return FLOATING_CONSTANT;} // insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);
 
  /* Invalid mantissa exponent forms */
 ({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 ({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}* {printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal Floating Constant ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 
  /* Valid Mantissa Exponent forms */ 
-({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {yylval.entry = insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
-({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX); yylval.fraction = strtof(yytext, NULL); return FLOATING_CONSTANT ;}
+({PLUS}?|{NEG}){DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ { yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext);return FLOATING_CONSTANT ;} // yylval.entry = insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX);
+({PLUS}?|{NEG}){DIGIT}*{DOT}{DIGIT}+([e|E])({PLUS}?|{NEG}){DIGIT}+ {yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext);return FLOATING_CONSTANT ;} // insert(constant_table,yytext,FLOATING_CONSTANT, INT_MAX); 
 
 
 
 
-{PLUS}?{DIGIT}+              {insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
-{NEG}{DIGIT}+                {insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10); return INTEGER_CONSTANT;}
+{PLUS}?{DIGIT}+              { yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return INTEGER_CONSTANT;} // insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10);
+{NEG}{DIGIT}+                { yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return INTEGER_CONSTANT;} // insert(constant_table,yytext,INTEGER_CONSTANT, INT_MAX); yylval.val = strtol(yytext, 0, 10);
 
 ({ALPHA}|{DIGIT}|{UND})*{INVALID_IDENTIFIER}+({ALPHA}|{DIGIT}|{UND})* { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
-{IDENTIFIER}                 {yylval.entry = insert(symbol_table,yytext,IDENTIFIER, INT_MAX);return IDENTIFIER;}
+{IDENTIFIER}                 {yylval = malloc(100 * sizeof(char)); strcpy(yylval, yytext); return IDENTIFIER;} // yylval.entry = insert(symbol_table,yytext,IDENTIFIER, INT_MAX);
 
 {DIGIT}+({ALPHA}|{UND})+   { printf("\n%s%30s%30s%30s%d\n", RED,  "Illegal identifier ", yytext ,"Line Number:", yylineno);printf("%s", NRML);}
 

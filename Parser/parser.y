@@ -4,8 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//#include "symbolTable.h"
-#include "share_symbol.h"
+#include "symbolTable.h"
+
+#define YYSTYPE char *
+
+#include "lex.yy.c"
 stEntry ** constant_table, ** symbol_table;
 int yylex();
 void yyerror(const char *s);
@@ -15,23 +18,12 @@ void yyerror(const char *s);
 %define parse.error verbose
 
 
-%union {
-    stEntry* entry;
-    double fraction;
-    long val;
-    int ival;
-    char *st;
-}
-
 %start start_state
 
-%token <entry> IDENTIFIER
-%token <ival> INTEGER_CONSTANT
-%token <fraction> FLOATING_CONSTANT
-%token <st> STRING_CONSTANT
-%token <entry> CHARACTER_CONSTANT
 
 
+/* Constants */
+%token IDENTIFIER INTEGER_CONSTANT FLOATING_CONSTANT STRING_CONSTANT CHARACTER_CONSTANT
 
 /* Data Type Tokens */
 %token CHAR SHORT INT LONG LONG_LONG FLOAT SIGNED UNSIGNED
@@ -111,8 +103,7 @@ datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ assignment_options | id EQ exp;
-
+assignment_exp: id EQ assignment_options | id EQ exp ;
 shorthand_exp: id PLUSEQ assignment_options 
                 | id MINUSEQ assignment_options 
                 | id MULEQ  assignment_options
@@ -121,7 +112,8 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
+assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT 
+
 statement_type: single_statement | block_statement ;
 
 single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call SEMICOLON | 
@@ -138,7 +130,6 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
 exp: exp_type COMMA exp | exp_type;
-
 
 exp_type: sub_exp | binary_exp;
 
@@ -182,6 +173,8 @@ float_constant: FLOATING_CONSTANT;
 
 id: IDENTIFIER;
 %%
+
+
 void yyerror (char const *s) {
     extern int yylineno;
     printf("Error message: %s Line no: %d \n", s, yylineno);
