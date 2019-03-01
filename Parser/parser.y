@@ -4,11 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#define YYSTYPE char *
+#include "lex.yy.c"
 #include "symbolTable.h"
 
-#define YYSTYPE char *
 
-#include "lex.yy.c"
+
+#define SYMBOL_TABLE symbol_table_list[current_scope].symbol_table
+
+extern stEntry** constant_table;
+int che = 0;
+
+table_t symbol_table_list[NUM_TABLES];
+
 stEntry ** constant_table, ** symbol_table;
 int yylex();
 void yyerror(const char *s);
@@ -86,7 +94,12 @@ function: function_decl | function_def;
 
 function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON;
 
-function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE statement CLOSE_BRACE;
+function_def: datatype IDENTIFIER  OPEN_PARENTHESIS function_def_continue 
+                                                                                    
+                                                                                     
+function_def_continue:
+    args CLOSE_PARENTHESIS block_statement ;
+
 
 args: args COMMA args_def |
       args_def |
@@ -94,7 +107,7 @@ args: args COMMA args_def |
 
 args_def: datatype id;
 
-args_call_def: id COMMA args_call_def | id |; 
+args_call_def: id COMMA args_call_def | id |  int_constant |; 
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
@@ -112,16 +125,24 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT 
+assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call SEMICOLON | 
+single_statement: if_statement | while_statement | return  | BREAK SEMICOLON | CONTINUE SEMICOLON |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
+
+return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON;
 
 function_call: id OPEN_PARENTHESIS args_call_def CLOSE_PARENTHESIS ;
 
-block_statement: OPEN_BRACE statement CLOSE_BRACE;
+block_statement: OPEN_BRACE {current_scope = create_new_scope();}
+
+                 
+                 statement 
+                 
+                 
+                 CLOSE_BRACE {current_scope = exit_scope();} ;
 
 statement: statement statement_type | ;
 
@@ -164,14 +185,14 @@ binary_exp: binary_exp BIT_AND binary_exp
 inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 
-int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_table,$1,INTEGER_CONSTANT, val);}
-            | CHARACTER_CONSTANT {int val = $1[1]; insert(constant_table,$1,INTEGER_CONSTANT, val);};
+int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_table,$1, val,INTEGER_CONSTANT);}
+            | CHARACTER_CONSTANT {int val = $1[1]; insert(constant_table,$1, val,INTEGER_CONSTANT);};
                                     
 
 
-float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1,FLOATING_CONSTANT, val);};
+float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);};
 
-id: IDENTIFIER {insert(symbol_table,$1,IDENTIFIER, INT_MAX);}
+id: IDENTIFIER {insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);}
 %%
 
 
@@ -179,11 +200,20 @@ void yyerror (char const *s) {
     extern int yylineno;
     printf("Error message: %s Line no: %d \n", s, yylineno);
  }
+
+
 int main(int argc, char *argv[])
 {
     extern FILE *yyin;
-	symbol_table = new_table();
-	constant_table = new_table();
+	int i;
+	 for(i=0; i<NUM_TABLES;i++)
+	 {
+	  symbol_table_list[i].symbol_table = NULL;
+	  symbol_table_list[i].parent = -1;
+	 }
+
+	constant_table = create_table();
+    symbol_table_list[0].symbol_table = create_table();
 	yyin = fopen(argv[1], "r");
 	if(!yyparse())
 	{
@@ -193,10 +223,12 @@ int main(int argc, char *argv[])
 	{
 			printf("\nParsing failed\n");
 	}
-	printf("\n\tSymbol table");
-	display(symbol_table);
-    printf("\n\tConstant table");
-	display(constant_table);
-	fclose(yyin);
+
+    printf("SYMBOL TABLES\n\n");
+    display_all();
+
+	printf("CONSTANT TABLE");
+	display_constant_table(constant_table);    
+
 	return 0;
 }
