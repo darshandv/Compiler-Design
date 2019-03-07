@@ -8,12 +8,12 @@
 #include "lex.yy.c"
 #include "symbolTable.h"
 
-
-
 #define SYMBOL_TABLE symbol_table_list[current_scope].symbol_table
 
 extern stEntry** constant_table;
 int che = 0;
+
+int dtype = 0;
 
 table_t symbol_table_list[NUM_TABLES];
 
@@ -109,14 +109,38 @@ args_def: datatype id;
 
 args_call_def: id COMMA args_call_def | id |  int_constant |; 
 
-declaration: datatype declaration_list SEMICOLON;
+declaration: datatype declaration_list SEMICOLON ;
 declaration_list: declaration_list COMMA decl | decl;
-decl: id | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp ;
+decl: id { stEntry* first  =  search(SYMBOL_TABLE, $1); first->data_type = dtype; printf("%s %d\n", first->lexeme, first->data_type);}  
+    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp ;
 datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
-type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
+type: INT {dtype = INT;} 
+      | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ assignment_options | id EQ exp ;
+assignment_exp: id EQ assignment_options {
+    if($3[0] >= 48 && $3[0] <=57) {
+        stEntry* result =  search(constant_table, $3);
+        stEntry* first  =  search(SYMBOL_TABLE, $1);
+        printf("%p %p\n",result, first );
+        if(result->data_type != first->data_type) {
+            printf("Datatype mismatch!\n");
+            exit(1);
+        }
+        } else {
+        stEntry* result =  search(SYMBOL_TABLE, $3);
+        stEntry* first  =  search(SYMBOL_TABLE, $1);
+        printf("%p %p\n",result, first );
+        if(result->data_type != first->data_type) {
+            printf("Datatype mismatch!\n");
+            exit(1);
+
+        }
+
+    }
+}
+                |
+                id EQ exp ;
 shorthand_exp: id PLUSEQ assignment_options 
                 | id MINUSEQ assignment_options 
                 | id MULEQ  assignment_options
@@ -125,7 +149,7 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
+assignment_options: int_constant {$$ = $1;} | float_constant {$$ = $1;} | id {$$ = $1;} | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 
 statement_type: single_statement | block_statement ;
 
@@ -181,18 +205,19 @@ binary_exp: binary_exp BIT_AND binary_exp
             | int_constant
             | id
             ;
+            
 
 inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 
-int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_table,$1, val,INTEGER_CONSTANT);}
-            | CHARACTER_CONSTANT {int val = $1[1]; insert(constant_table,$1, val,INTEGER_CONSTANT);};
+int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_table,$1, val,INT);$$=$1;}
+            | CHARACTER_CONSTANT {int val = $1[1]; insert(constant_table,$1, val,INT);$$=$1;};
                                     
 
 
-float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);};
+float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);$$=$1;};
 
-id: IDENTIFIER {insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);}
+id: IDENTIFIER { insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);}
 %%
 
 
