@@ -4,19 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#define YYSTYPE char *
-#include "lex.yy.c"
-#include "symbolTable.h"
-
-
-
-#define SYMBOL_TABLE symbol_table_list[current_scope].symbol_table
-
-extern stEntry** constant_table;
-int che = 0;
-
-table_t symbol_table_list[NUM_TABLES];
-
+//#include "symbolTable.h"
+#include "share_symbol.h"
 stEntry ** constant_table, ** symbol_table;
 int yylex();
 void yyerror(const char *s);
@@ -26,12 +15,26 @@ void yyerror(const char *s);
 %define parse.error verbose
 
 
+%union {
+    stEntry* entry;
+    double fraction;
+    long val;
+    int ival;
+    char *st;
+}
+
 %start start_state
 
+%token <val> NUMBER
+%token <entry> IDENTIFIER
+%token <ival> INTEGER_CONSTANT
+%token <fraction> FLOATING_CONSTANT
+%token <ival> HEXADECIMAL_CONSTANT
+%token <ival> OCTAL_CONSTANT
+%token <st> STRING_CONSTANT
+%token <entry> CHARACTER_CONSTANT
 
 
-/* Constants */
-%token IDENTIFIER INTEGER_CONSTANT FLOATING_CONSTANT STRING_CONSTANT CHARACTER_CONSTANT
 
 /* Data Type Tokens */
 %token CHAR SHORT INT LONG LONG_LONG FLOAT SIGNED UNSIGNED
@@ -60,6 +63,14 @@ void yyerror(const char *s);
 /* Preprocessor directives */
 %token INCLUDE DEF
 
+%type <fraction> exp 
+%type <fraction> sub_exp
+%type <fraction> exp_type
+%type <ival> binary_exp
+%type <fraction> arithmetic_exp
+%type <fraction> float_constant
+%type <ival> int_constant
+%type <entry> id
 
 
 %left COMMA
@@ -94,12 +105,7 @@ function: function_decl | function_def;
 
 function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON;
 
-function_def: datatype IDENTIFIER  OPEN_PARENTHESIS function_def_continue 
-                                                                                    
-                                                                                     
-function_def_continue:
-    args CLOSE_PARENTHESIS block_statement ;
-
+function_def: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS OPEN_BRACE statement CLOSE_BRACE;
 
 args: args COMMA args_def |
       args_def |
@@ -107,7 +113,7 @@ args: args COMMA args_def |
 
 args_def: datatype id;
 
-args_call_def: id COMMA args_call_def | id |  int_constant |; 
+args_call_def: id COMMA args_call_def | id |; 
 
 declaration: datatype declaration_list SEMICOLON;
 declaration_list: declaration_list COMMA decl | decl;
@@ -116,7 +122,8 @@ datatype: sign_extension type | type;
 sign_extension: SIGNED | UNSIGNED;
 type: INT | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
-assignment_exp: id EQ assignment_options | id EQ exp ;
+assignment_exp: id EQ assignment_options | id EQ exp;
+
 shorthand_exp: id PLUSEQ assignment_options 
                 | id MINUSEQ assignment_options 
                 | id MULEQ  assignment_options
@@ -125,24 +132,15 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant | float_constant | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
-
+assignment_options: int_constant | float_constant | HEXADECIMAL_CONSTANT | OCTAL_CONSTANT | id | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | return  | BREAK SEMICOLON | CONTINUE SEMICOLON |  SEMICOLON | function_call SEMICOLON | 
+single_statement: if_statement | while_statement | RETURN SEMICOLON | BREAK SEMICOLON | CONTINUE SEMICOLON | SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
-
-return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON;
 
 function_call: id OPEN_PARENTHESIS args_call_def CLOSE_PARENTHESIS ;
 
-block_statement: OPEN_BRACE {current_scope = create_new_scope();}
-
-                 
-                 statement 
-                 
-                 
-                 CLOSE_BRACE {current_scope = exit_scope();} ;
+block_statement: OPEN_BRACE statement CLOSE_BRACE;
 
 statement: statement statement_type | ;
 
@@ -150,34 +148,38 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
 
-exp: exp_type COMMA exp | exp_type;
+exp: exp_type COMMA exp { $$ = $1,$3;} | exp_type  | exp_par;
+
+exp_par: exp_par OPEN_PARENTHESIS exp_par CLOSE_PARENTHESIS | exp_par exp_par| exp_type | symbol | ;
+
+symbol: AND | OR | EQEQ | GT | LT | GE | LE | PLUS | MINUS | MUL | DIV | LSHIFT | RSHIFT;
 
 exp_type: sub_exp | binary_exp;
 
-sub_exp: sub_exp AND sub_exp
-        | sub_exp OR sub_exp
-        | NOT sub_exp
-        | sub_exp EQEQ sub_exp
-        | sub_exp NEQ sub_exp
-        | sub_exp GT sub_exp 
-        | sub_exp LT sub_exp
-        | sub_exp GE sub_exp
-        | sub_exp LE sub_exp
+sub_exp: sub_exp AND sub_exp	{ $$ = $1 && $3; }
+        | sub_exp OR sub_exp { $$ = $1 || $3; }
+        | NOT sub_exp { $$  = !$2; }
+        | sub_exp EQEQ sub_exp { $$ = $1 == $3; }
+        | sub_exp NEQ sub_exp { $$ = $1 != $3; }
+        | sub_exp GT sub_exp { $$ = $1 > $3; }
+        | sub_exp LT sub_exp { $$ = $1 < $3; }
+        | sub_exp GE sub_exp { $$ = $1 >= $3; }
+        | sub_exp LE sub_exp { $$ = $1 <= $3; }
         | arithmetic_exp 
 		;
  
-arithmetic_exp: arithmetic_exp PLUS arithmetic_exp
-                | arithmetic_exp MINUS arithmetic_exp 
-		        | arithmetic_exp MUL arithmetic_exp	
-                | arithmetic_exp DIV arithmetic_exp
+arithmetic_exp: arithmetic_exp PLUS arithmetic_exp	{ $$ = $1 + $3; }
+                | arithmetic_exp MINUS arithmetic_exp { $$ = $1 - $3; }
+		        | arithmetic_exp MUL arithmetic_exp	{ $$ = $1 * $3; }
+                | arithmetic_exp DIV arithmetic_exp { $$ = $1 / $3; }
                 | assignment_options
                 ;
-binary_exp: binary_exp BIT_AND binary_exp
-            | binary_exp BIT_OR binary_exp 
-            | binary_exp BIT_XOR binary_exp 
-            | binary_exp LSHIFT binary_exp	
-            | binary_exp RSHIFT binary_exp 
-            | binary_exp MOD binary_exp 
+binary_exp: binary_exp BIT_AND binary_exp	{ $$ = $1 & $3; }
+            | binary_exp BIT_OR binary_exp { $$ = $1 | $3; }
+            | binary_exp BIT_XOR binary_exp { $$ = $1 ^ $3; }
+            | binary_exp LSHIFT binary_exp	{ $$ = $1 << $3; }
+            | binary_exp RSHIFT binary_exp { $$ = $1 >> $3; }
+            | binary_exp MOD binary_exp { $$ = $1 % $3; }
             | int_constant
             | id
             ;
@@ -185,35 +187,24 @@ binary_exp: binary_exp BIT_AND binary_exp
 inc_dec_exp: INC id  | DEC id | id INC | id DEC;
 
 
-int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_table,$1, val,INTEGER_CONSTANT);}
-            | CHARACTER_CONSTANT {int val = $1[1]; insert(constant_table,$1, val,INTEGER_CONSTANT);};
-                                    
+int_constant: INTEGER_CONSTANT { $$ = $1;}
+            | CHARACTER_CONSTANT { $$ = $1; }
+            ;
 
+float_constant: FLOATING_CONSTANT { $$ = $1;}
+                        ;
 
-float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);};
-
-id: IDENTIFIER {insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);}
+id: IDENTIFIER;
 %%
-
-
 void yyerror (char const *s) {
     extern int yylineno;
     printf("Error message: %s Line no: %d \n", s, yylineno);
  }
-
-
 int main(int argc, char *argv[])
 {
     extern FILE *yyin;
-	int i;
-	 for(i=0; i<NUM_TABLES;i++)
-	 {
-	  symbol_table_list[i].symbol_table = NULL;
-	  symbol_table_list[i].parent = -1;
-	 }
-
-	constant_table = create_table();
-    symbol_table_list[0].symbol_table = create_table();
+	symbol_table = new_table();
+	constant_table = new_table();
 	yyin = fopen(argv[1], "r");
 	if(!yyparse())
 	{
@@ -223,12 +214,10 @@ int main(int argc, char *argv[])
 	{
 			printf("\nParsing failed\n");
 	}
-
-    printf("SYMBOL TABLES\n\n");
-    display_all();
-
-	printf("CONSTANT TABLE");
-	display_constant_table(constant_table);    
-
+	printf("\n\tSymbol table");
+	display(symbol_table);
+    printf("\n\tConstant table");
+	display(constant_table);
+	fclose(yyin);
 	return 0;
 }
