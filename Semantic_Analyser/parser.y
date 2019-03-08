@@ -9,6 +9,7 @@
 #include "symbolTable.h"
 
 #define SYMBOL_TABLE symbol_table_list[current_scope].symbol_table
+#define SYMBOL_TABLE_INDEX symbol_table_list[current_scope]
 
 extern stEntry** constant_table;
 int che = 0;
@@ -122,25 +123,26 @@ type: INT {dtype = INT;}
       | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
 
 assignment_exp: id EQ assignment_options {
-    if($3[0] >= 48 && $3[0] <=57) {
-        stEntry* result =  search(constant_table, $3);
-        stEntry* first  =  search(SYMBOL_TABLE, $1);
-        printf("%p %p\n",result, first );
-        if(result->data_type != first->data_type) {
-            printf("Datatype mismatch!\n");
-            exit(1);
-        }
-        } else {
-        stEntry* result =  search(SYMBOL_TABLE, $3);
-        stEntry* first  =  search(SYMBOL_TABLE, $1);
-        printf("%p %p\n",result, first );
-        if(result->data_type != first->data_type) {
-            printf("Datatype mismatch!\n");
-            exit(1);
+    // Recursive search needs to be added here as well, we'll deal with this later
+    // if($3[0] >= 48 && $3[0] <=57) {
+    //     stEntry* result =  search(constant_table, $3);
+    //     stEntry* first  =  search(SYMBOL_TABLE, $1);
+    //     printf("%p %p\n",result, first );
+    //     if(result->data_type != first->data_type) {
+    //         printf("Datatype mismatch!\n");
+    //         exit(1);
+    //     }
+    //     } else {
+    //     stEntry* result =  search(SYMBOL_TABLE, $3);
+    //     stEntry* first  =  search(SYMBOL_TABLE, $1);
+    //     printf("%p %p\n",result, first );
+    //     if(result->data_type != first->data_type) {
+    //         printf("Datatype mismatch!\n");
+    //         exit(1);
 
-        }
+    //     }
 
-    }
+    // }
 }
                 |
                 id EQ exp ;
@@ -221,9 +223,22 @@ int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_t
 float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);$$=$1;};
 
 id: IDENTIFIER {
-    stEntry* is_Present =  search(SYMBOL_TABLE, $1);
+    //stEntry* is_Present =  search(SYMBOL_TABLE, $1);
+    stEntry* is_Present = NULL;
+    int current_search_scope = current_scope;
+    int scope_where_lexeme_found;
+    table_t current_table = symbol_table_list[current_search_scope];
+    // recursive search
+    while(is_Present == NULL) {
+        is_Present = search(current_table.symbol_table, $1);
+        scope_where_lexeme_found = current_search_scope;
+        if(current_search_scope==0) // if at outermost scope and still did not find.
+            break;
+        current_search_scope = current_table.parent;
+        current_table = symbol_table_list[current_search_scope];
+    }
     if(is_declaration==1){
-        if(is_Present != NULL) {
+        if(is_Present != NULL && scope_where_lexeme_found == current_scope) {
             printf("Line %3d: ERROR: %s is already declared!\n", yylineno, $1); exit(1);
         } else {
             insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);

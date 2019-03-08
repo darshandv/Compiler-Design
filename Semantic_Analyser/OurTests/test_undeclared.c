@@ -1,11 +1,19 @@
 #include <stdio.h>
 
+// int glob;
 int main()
-{   char b;
+{   char b,c,d;
     //int b;
+    char a;
+    //glob =1;
 
     if(1) {
-        unsigned int b;
-        func();
+        int a;
+        b = a;
+        //func();
+    }
+
+    {
+
     }
 }
