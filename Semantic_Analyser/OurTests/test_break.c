@@ -2,6 +2,7 @@
 
 int main()
 {
+    break;
     while(1) {
         break;
     }

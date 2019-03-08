@@ -15,6 +15,8 @@ int che = 0;
 
 int dtype = 0;
 int in_loop = 0;
+int is_declaration  =0 ;
+extern int yylineno;
 
 table_t symbol_table_list[NUM_TABLES];
 
@@ -110,11 +112,11 @@ args_def: datatype id;
 
 args_call_def: id COMMA args_call_def | id |  int_constant |; 
 
-declaration: datatype declaration_list SEMICOLON ;
+declaration: datatype declaration_list SEMICOLON {is_declaration = 0;}
 declaration_list: declaration_list COMMA decl | decl;
-decl: id { stEntry* first  =  search(SYMBOL_TABLE, $1); first->data_type = dtype; printf("%s %d\n", first->lexeme, first->data_type);}  
+decl: id { stEntry* first  =  search(SYMBOL_TABLE, $1); first->data_type = dtype;}  
     | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp ;
-datatype: sign_extension type | type;
+datatype: sign_extension type {is_declaration = 1;} | type {is_declaration = 1;}
 sign_extension: SIGNED | UNSIGNED;
 type: INT {dtype = INT;} 
       | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
@@ -154,7 +156,7 @@ assignment_options: int_constant {$$ = $1;} | float_constant {$$ = $1;} | id {$$
 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | return  | BREAK SEMICOLON {if(in_loop == 0) {printf("Illegal break statement, not in loop!\n"); exit(1);} } | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Illegal continue statement, not in loop!\n"); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
+single_statement: if_statement | while_statement | return  | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);} } | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
 return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON;
@@ -218,7 +220,25 @@ int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_t
 
 float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);$$=$1;};
 
-id: IDENTIFIER { insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);}
+id: IDENTIFIER {
+    stEntry* is_Present =  search(SYMBOL_TABLE, $1);
+    if(is_declaration==1){
+        if(is_Present != NULL) {
+            printf("Line %3d: ERROR: %s is already declared!\n", yylineno, $1); exit(1);
+        } else {
+            insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);
+        }
+        
+    } else {  
+        if(is_Present == NULL) {
+            printf("Line %3d: ERROR: %s is an undeclared variable.\n", yylineno, $1); exit(1);
+        }
+        }
+}
+
+//
+
+
 %%
 
 
