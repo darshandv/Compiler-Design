@@ -14,6 +14,7 @@ extern stEntry** constant_table;
 int che = 0;
 
 int dtype = 0;
+int in_loop = 0;
 
 table_t symbol_table_list[NUM_TABLES];
 
@@ -153,7 +154,7 @@ assignment_options: int_constant {$$ = $1;} | float_constant {$$ = $1;} | id {$$
 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | return  | BREAK SEMICOLON | CONTINUE SEMICOLON |  SEMICOLON | function_call SEMICOLON | 
+single_statement: if_statement | while_statement | return  | BREAK SEMICOLON {if(in_loop == 0) {printf("Illegal break statement, not in loop!\n"); exit(1);} } | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Illegal continue statement, not in loop!\n"); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
 return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON;
@@ -172,7 +173,7 @@ statement: statement statement_type | ;
 
 if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX| IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ELSE statement_type ;
 
-while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type;
+while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;}
 
 exp: exp_type COMMA exp | exp_type;
 
