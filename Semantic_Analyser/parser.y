@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #define YYSTYPE char *
 #include "lex.yy.c"
 #include "symbolTable.h"
@@ -17,6 +18,7 @@ int che = 0;
 int dtype = 0;
 int in_loop = 0;
 int is_declaration  =0 ;
+int is_decl_temp = 0;
 extern int yylineno;
 
 table_t symbol_table_list[NUM_TABLES];
@@ -24,6 +26,7 @@ table_t symbol_table_list[NUM_TABLES];
 stEntry ** constant_table, ** symbol_table;
 int yylex();
 void yyerror(const char *s);
+bool type_check(char* , char* );
 %}
 
 %define parse.lac full
@@ -113,16 +116,21 @@ args_def: datatype id;
 
 args_call_def: id COMMA args_call_def | id |  int_constant |; 
 
-declaration: datatype declaration_list SEMICOLON {is_declaration = 0;}
+declaration: datatype declaration_list SEMICOLON {is_declaration = 0;};
 declaration_list: declaration_list COMMA decl | decl;
 decl: id { stEntry* first  =  search(SYMBOL_TABLE, $1); first->data_type = dtype;}  
-    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp ;
+    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp {is_decl_temp=is_declaration;is_declaration=0;};
 datatype: sign_extension type {is_declaration = 1;} | type {is_declaration = 1;}
 sign_extension: SIGNED | UNSIGNED;
 type: INT {dtype = INT;} 
-      | LONG | SHORT | CHAR | LONG_LONG | FLOAT;
+      | LONG {dtype = LONG;}
+      | SHORT {dtype=SHORT;}
+      | CHAR {dtype=CHAR;}
+      | LONG_LONG {dtype=LONG_LONG;}
+      | FLOAT {dtype=FLOAT;};
 
-assignment_exp: id EQ assignment_options {
+assignment_exp: id EQ 
+                assignment_options {
     // Recursive search needs to be added here as well, we'll deal with this later
     // if($3[0] >= 48 && $3[0] <=57) {
     //     stEntry* result =  search(constant_table, $3);
@@ -141,11 +149,18 @@ assignment_exp: id EQ assignment_options {
     //         exit(1);
 
     //     }
-
-    // }
+    is_declaration = is_decl_temp;
 }
                 |
-                id EQ exp ;
+                id EQ exp {is_declaration = is_decl_temp;}|
+                id EQ id {
+                    
+                    if(!type_check($1,$3)){
+                        yyerror("Type mismatch");
+                        exit(0);
+                    }
+                    is_declaration = is_decl_temp;
+                };
 shorthand_exp: id PLUSEQ assignment_options 
                 | id MINUSEQ assignment_options 
                 | id MULEQ  assignment_options
@@ -154,7 +169,7 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant {$$ = $1;} | float_constant {$$ = $1;} | id {$$ = $1;} | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
+assignment_options: int_constant {$$ = $1;} | float_constant {$$ = $1;}  | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
 
 statement_type: single_statement | block_statement ;
 
@@ -177,7 +192,7 @@ statement: statement statement_type | ;
 
 if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX| IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type ELSE statement_type ;
 
-while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;}
+while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;
 
 exp: exp_type COMMA exp | exp_type;
 
@@ -256,12 +271,17 @@ id: IDENTIFIER {
 
 %%
 
-
 void yyerror (char const *s) {
     extern int yylineno;
     printf("Error message: %s Line no: %d \n", s, yylineno);
  }
 
+bool type_check(char* lexeme, char* lexeme_prime){
+    stEntry* entry = search_recursive(lexeme);
+    stEntry* entry_prime = search_recursive(lexeme_prime);
+
+    return entry->data_type == entry_prime->data_type;
+}
 
 int main(int argc, char *argv[])
 {

@@ -42,7 +42,7 @@ stEntry** create_table()
 	stEntry** hash_table_ptr = NULL; // declare a pointer
 
 	/* Allocate memory for a hashtable array of size HASH_TABLE_SIZE */
-	if( ( hash_table_ptr = malloc( sizeof( stEntry* ) * HASH_TABLE_SIZE ) ) == NULL )
+	if( ( hash_table_ptr = (stEntry**)malloc( sizeof( stEntry* ) * HASH_TABLE_SIZE ) ) == NULL )
     	return NULL;
 
 	int i;
@@ -76,9 +76,6 @@ uint32_t hash( char *lexeme )
 	size_t i;
 	uint32_t hash;
 
-	/* Apply jenkin's hash function
-	* https://en.wikipedia.org/wiki/Jenkins_hash_function#one-at-a-time
-	*/
 	for ( hash = i = 0; i < strlen(lexeme); ++i ) {
         hash += lexeme[i];
         hash += ( hash << 10 );
@@ -97,7 +94,7 @@ stEntry *create_entry( char *lexeme, int value, int data_type )
 	stEntry *new_entry;
 
 	/* Allocate space for new_entry */
-	if( ( new_entry = malloc( sizeof( stEntry ) ) ) == NULL ) {
+	if( ( new_entry = (stEntry*) malloc( sizeof( stEntry ) ) ) == NULL ) {
 		return NULL;
 	}
 	/* Copy lexeme to new_entry location using strdup (string-duplicate). Return NULL if it fails */
@@ -159,6 +156,7 @@ stEntry* search_recursive(char* lexeme)
 
 	return finder;
 }
+
 /* Insert an entry into a hash table. */
 stEntry* insert( stEntry** hash_table_ptr, char* lexeme, int value, int data_type)
 {
