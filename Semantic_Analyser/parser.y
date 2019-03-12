@@ -118,8 +118,19 @@ args_call_def: id COMMA args_call_def | id |  int_constant |;
 
 declaration: datatype declaration_list SEMICOLON {is_declaration = 0;};
 declaration_list: declaration_list COMMA decl | decl;
-decl: id { stEntry* first  =  search(SYMBOL_TABLE, $1); first->data_type = dtype;}  
-    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT |assignment_exp {is_decl_temp=is_declaration;is_declaration=0;};
+decl: id { stEntry* first  =  search_recursive($1); first->data_type = dtype;}  
+    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT {
+                                                    if(is_declaration) {
+                                                        int array_index = strtol($3,0,10);
+                                                        if(array_index<=0) 
+                                                            yyerror("Size of array is not positive\n");
+                                                        else {
+                                                            stEntry* result = search_recursive($1);
+                                                            result->array_dimension = array_index; 
+                                                        }
+                                                        }
+                                                }
+    |assignment_exp {is_decl_temp=is_declaration;is_declaration=0;};
 datatype: sign_extension type {is_declaration = 1;} | type {is_declaration = 1;}
 sign_extension: SIGNED | UNSIGNED;
 type: INT {dtype = INT;} 
@@ -169,7 +180,10 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant {$$ = $1;} | float_constant {$$ = $1;}  | id OPEN_SQR_BKT id CLOSE_SQR_BKT | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT ;
+assignment_options: int_constant {$$ = $1;} 
+                    | float_constant {$$ = $1;}  
+                    | id OPEN_SQR_BKT id CLOSE_SQR_BKT 
+                    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT { int array_index = strtol($3,0,10); stEntry* result  = search_recursive($1);  if(array_index > result->array_dimension) yyerror("Array index out of range"); if(array_index < 0) yyerror("Array index cannot be negative");}
 
 statement_type: single_statement | block_statement ;
 
@@ -273,7 +287,8 @@ id: IDENTIFIER {
 
 void yyerror (char const *s) {
     extern int yylineno;
-    printf("Error message: %s Line no: %d \n", s, yylineno);
+    printf("Error: Line %3d:  %s \n", yylineno, s);
+    exit(1);
  }
 
 bool type_check(char* lexeme, char* lexeme_prime){
