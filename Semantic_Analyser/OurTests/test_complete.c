@@ -21,7 +21,7 @@ int condition(){
 }
 
 int main(){
-    int p = 11;
+    float p = 11.0;
     {   
         float k = 5.0;
         while (p && k){
