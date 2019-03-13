@@ -20,6 +20,7 @@ int in_loop = 0;
 int is_declaration  =0 ;
 int is_decl_temp = 0;
 int is_func = 0;
+int is_func_scope = 0;
 int found_ret = 0;
 extern int yylineno;
 
@@ -101,9 +102,9 @@ comments: SINGLE_LINE | MULTI_LINE;
 
 function: function_decl | function_def;
 
-function_decl: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON {is_declaration = 0;}
+function_decl: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON {is_declaration = 0;};
 
-function_def: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS  {is_func =1;is_declaration = 0;} block_statement ;
+function_def: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS  {is_func =1;is_func_scope = current_scope; is_declaration = 0;} block_statement ;
                                                                                     
 
 
@@ -141,37 +142,22 @@ type: INT {dtype = INT;}
       | LONG_LONG {dtype=LONG_LONG;}
       | FLOAT {dtype=FLOAT;};
 
-assignment_exp: id EQ 
-                assignment_options {
-    // Recursive search needs to be added here as well, we'll deal with this later
-    // if($3[0] >= 48 && $3[0] <=57) {
-    //     stEntry* result =  search(constant_table, $3);
-    //     stEntry* first  =  search(SYMBOL_TABLE, $1);
-    //     printf("%p %p\n",result, first );
-    //     if(result->data_type != first->data_type) {
-    //         printf("Datatype mismatch!\n");
-    //         exit(1);
-    //     }
-    //     } else {
-    //     stEntry* result =  search(SYMBOL_TABLE, $3);
-    //     stEntry* first  =  search(SYMBOL_TABLE, $1);
-    //     printf("%p %p\n",result, first );
-    //     if(result->data_type != first->data_type) {
-    //         printf("Datatype mismatch!\n");
-    //         exit(1);
-
-    //     }
-    is_declaration = is_decl_temp;
-}
-                |
-                id EQ exp {is_declaration = is_decl_temp;}|
-                id EQ id {
-                    
+assignment_exp: id EQ exp {
+                        is_declaration = is_decl_temp;
+                    }
+                | id EQ id {
                     type_check($1,$3);
+                    stEntry* rhs = search_recursive($3);
+                    stEntry* lhs = search_recursive($1);
+                    int val = rhs->value;
+                    lhs->value = val;
                     is_declaration = is_decl_temp;
                 }
                 | id EQ int_constant{
                     type_check($1,$3);
+                    int val = strtol($3, 0 ,10);
+                    stEntry* result = search_recursive($1);
+                    result->value = val;
                     is_declaration = is_decl_temp;
                 }
                 | id EQ float_constant{
@@ -198,7 +184,7 @@ statement_type: single_statement | block_statement ;
 single_statement: if_statement | while_statement | return {found_ret =1;} | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);} } | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
-return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON;
+return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON | RETURN arithmetic_exp SEMICOLON;
 
 function_call: id OPEN_PARENTHESIS args_call_def CLOSE_PARENTHESIS ;
 
@@ -208,7 +194,7 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
                  statement 
                  
                  
-                 CLOSE_BRACE {current_scope = exit_scope();} {if(is_func ==1 && found_ret ==0) {yyerror("Function has no return statement");exit(1);} is_func =0; found_ret =0 ;};
+                 CLOSE_BRACE {if(is_func ==1 && found_ret ==0 && is_func_scope == SYMBOL_TABLE_INDEX.parent ) {yyerror("Function has no return statement");exit(1);} is_func =0; found_ret =0 ;current_scope = exit_scope();} ;
 
 statement: statement statement_type | ;
 
@@ -216,9 +202,9 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS statement_type %prec IFX
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;
 
-exp: exp_type COMMA exp | exp_type;
+exp: exp_type COMMA exp {$$=$3;} | exp_type {$$ = $1;}
 
-exp_type: sub_exp | binary_exp;
+exp_type: sub_exp {$$ = $1;}| binary_exp;
 
 sub_exp: sub_exp AND sub_exp {type_check($1,$3);}
         | sub_exp OR sub_exp {type_check($1,$3);}
@@ -229,13 +215,13 @@ sub_exp: sub_exp AND sub_exp {type_check($1,$3);}
         | sub_exp LT sub_exp {type_check($1,$3);}
         | sub_exp GE sub_exp {type_check($1,$3);}
         | sub_exp LE sub_exp {type_check($1,$3);}
-        | arithmetic_exp 
+        | arithmetic_exp {$$ = $1;}
 		;
  
-arithmetic_exp: arithmetic_exp PLUS arithmetic_exp {type_check($1,$3);}
-                | arithmetic_exp MINUS arithmetic_exp {type_check($1,$3);}
-		        | arithmetic_exp MUL arithmetic_exp	{type_check($1,$3);}
-                | arithmetic_exp DIV arithmetic_exp {type_check($1,$3);}
+arithmetic_exp: arithmetic_exp PLUS arithmetic_exp {type_check($1,$3); stEntry* val1 = search_recursive($1); stEntry* val2 = search_recursive($3);  int  result = (int)(val1->value + val2->value);  char tmp[10]; $$ = my_itoa(result, tmp);}
+                | arithmetic_exp MINUS arithmetic_exp {type_check($1,$3); stEntry* val1 = search_recursive($1); stEntry* val2 = search_recursive($3);  int  result = (int)(val1->value - val2->value);  char tmp[10]; $$ = my_itoa(result, tmp);}
+		        | arithmetic_exp MUL arithmetic_exp	{type_check($1,$3); stEntry* val1 = search_recursive($1); stEntry* val2 = search_recursive($3);  int  result = (int)(val1->value * val2->value);  char tmp[10]; $$ = my_itoa(result, tmp);}
+                | arithmetic_exp DIV arithmetic_exp {type_check($1,$3); stEntry* val1 = search_recursive($1); stEntry* val2 = search_recursive($3);  int  result = (int)(val1->value / val2->value);  char tmp[10]; $$ = my_itoa(result, tmp);}
                 | assignment_options
                 ;
 binary_exp: binary_exp BIT_AND binary_exp {type_check($1,$3);}
@@ -246,6 +232,7 @@ binary_exp: binary_exp BIT_AND binary_exp {type_check($1,$3);}
             | binary_exp MOD binary_exp {type_check($1,$3);}
             | int_constant
             | id
+            | float_constant
             ;
             
 
@@ -303,20 +290,19 @@ void type_check(char* lexeme, char* lexeme_prime){
     stEntry* entry_prime = search_recursive(lexeme_prime);
     
     if(!entry){
-        if(!(entry_prime = search(constant_table,lexeme))){
-            entry_prime = search(constant_table,lexeme);
-            if(entry==NULL){
-                yyerror("Entry not found in constant table");
-                exit(1);
-            }
-        };
+        entry = search(constant_table,lexeme);
+        if(entry==NULL){
+            yyerror("Entry not found in constant table");
+            exit(1);
+        }
     }
     
     if(!entry_prime){
         entry_prime = search(constant_table,lexeme_prime);
         if(entry_prime==NULL){
-            yyerror("Entry not found in constant table");
-            exit(1);
+            return;
+           yyerror("Entry not found in constant table");
+           exit(1);
         }
     }
     
