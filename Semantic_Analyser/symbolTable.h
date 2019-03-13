@@ -20,6 +20,7 @@ struct entry_s
 	int array_dimension;
 	int is_constant;
 	int num_params;
+	int is_func;
 	struct entry_s* successor;
 };
 
@@ -247,7 +248,7 @@ void display_symbol_table(stEntry** hash_table_ptr)
 
 	print_dashes(100);
 
-  printf(" %-20s %-20s %-20s %-20s %-20s\n","lexeme","data-type","array_dimension","num_params","param_list");
+  printf(" %-20s %-20s %-20s %-20s %-20s\n","lexeme","data-type","array_dimension","num_params","is_func");
 
 	print_dashes(100);
 
@@ -260,9 +261,10 @@ void display_symbol_table(stEntry** hash_table_ptr)
 
 			printf(" %-20d", traverser->num_params);
 
+			printf("%d", traverser->is_func);
 			int j;
-			for(j=0; j < traverser->num_params; j++)
-			printf(" %d",traverser->parameter_list[j]);
+			// for(j=0; j < traverser->num_params; j++)
+			// printf(" %d",traverser->parameter_list[j]);
 			printf("\n");
 
 			traverser = traverser->successor;

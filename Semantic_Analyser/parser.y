@@ -19,6 +19,8 @@ int dtype = 0;
 int in_loop = 0;
 int is_declaration  =0 ;
 int is_decl_temp = 0;
+int is_func = 0;
+int found_ret = 0;
 extern int yylineno;
 
 table_t symbol_table_list[NUM_TABLES];
@@ -99,13 +101,10 @@ comments: SINGLE_LINE | MULTI_LINE;
 
 function: function_decl | function_def;
 
-function_decl: datatype IDENTIFIER OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON;
+function_decl: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON ;
 
-function_def: datatype IDENTIFIER  OPEN_PARENTHESIS function_def_continue 
+function_def: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS  {is_func =1;} block_statement ;
                                                                                     
-                                                                                     
-function_def_continue:
-    args CLOSE_PARENTHESIS block_statement ;
 
 
 args: args COMMA args_def |
@@ -187,7 +186,7 @@ assignment_options: int_constant {$$ = $1;}
 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | return  | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);} } | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
+single_statement: if_statement | while_statement | return {found_ret =1;} | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);} } | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
 return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON;
@@ -200,7 +199,7 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
                  statement 
                  
                  
-                 CLOSE_BRACE {current_scope = exit_scope();} ;
+                 CLOSE_BRACE {current_scope = exit_scope();} {if(is_func ==1 && found_ret ==0) yyerror("Function has no return statement"); is_func =0; found_ret =0 ;}
 
 statement: statement statement_type | ;
 
