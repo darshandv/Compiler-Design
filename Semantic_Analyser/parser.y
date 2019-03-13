@@ -238,12 +238,12 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp {type_check($1,$3);}
                 | arithmetic_exp DIV arithmetic_exp {type_check($1,$3);}
                 | assignment_options
                 ;
-binary_exp: binary_exp BIT_AND binary_exp {type_check($1,$3);}
-            | binary_exp BIT_OR binary_exp {type_check($1,$3);}
-            | binary_exp BIT_XOR binary_exp {type_check($1,$3);}
-            | binary_exp LSHIFT binary_exp	{type_check($1,$3);}
-            | binary_exp RSHIFT binary_exp {type_check($1,$3);}
-            | binary_exp MOD binary_exp {type_check($1,$3);}
+binary_exp: binary_exp BIT_AND binary_exp 
+            | binary_exp BIT_OR binary_exp 
+            | binary_exp BIT_XOR binary_exp 
+            | binary_exp LSHIFT binary_exp	
+            | binary_exp RSHIFT binary_exp 
+            | binary_exp MOD binary_exp 
             | int_constant
             | id
             ;
