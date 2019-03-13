@@ -17,7 +17,7 @@ int condition(){
         f = d * e;
     }
 
-    return f;
+    // return f;
 }
 
 int main(){
