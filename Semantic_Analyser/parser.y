@@ -130,7 +130,7 @@ decl: id { stEntry* first  =  search_recursive($1); first->data_type = dtype;}
                                                         }
                                                 }
     |assignment_exp {is_decl_temp=is_declaration;is_declaration=0;};
-datatype: sign_extension type {is_declaration = 1;} | type {is_declaration = 1;}
+datatype: sign_extension type {is_declaration = 1;} | type {is_declaration = 1;};
 sign_extension: SIGNED | UNSIGNED;
 type: INT {dtype = INT;} 
       | LONG {dtype = LONG;}
@@ -293,6 +293,18 @@ void yyerror (char const *s) {
 bool type_check(char* lexeme, char* lexeme_prime){
     stEntry* entry = search_recursive(lexeme);
     stEntry* entry_prime = search_recursive(lexeme_prime);
+
+    if(!entry){
+        if(!(entry = search(constant_table,lexeme))){
+            
+        };
+    }
+
+    if(!entry_prime){
+        if(!(entry_prime = search(constant_table,lexeme))){
+            
+        };
+    }
 
     return entry->data_type == entry_prime->data_type;
 }
