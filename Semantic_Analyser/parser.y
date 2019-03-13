@@ -28,7 +28,7 @@ table_t symbol_table_list[NUM_TABLES];
 stEntry ** constant_table, ** symbol_table;
 int yylex();
 void yyerror(const char *s);
-bool type_check(char* , char* );
+void type_check(char* , char* );
 %}
 
 %define parse.lac full
@@ -121,8 +121,10 @@ decl: id { stEntry* first  =  search_recursive($1); first->data_type = dtype;}
     | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT {
                                                     if(is_declaration) {
                                                         int array_index = strtol($3,0,10);
-                                                        if(array_index<=0) 
+                                                        if(array_index<=0){ 
                                                             yyerror("Size of array is not positive\n");
+                                                            exit(1);
+                                                        }
                                                         else {
                                                             stEntry* result = search_recursive($1);
                                                             result->array_dimension = array_index; 
@@ -165,12 +167,18 @@ assignment_exp: id EQ
                 id EQ exp {is_declaration = is_decl_temp;}|
                 id EQ id {
                     
-                    if(!type_check($1,$3)){
-                        yyerror("Type mismatch");
-                        exit(0);
-                    }
+                    type_check($1,$3);
                     is_declaration = is_decl_temp;
-                };
+                }
+                | id EQ int_constant{
+                    type_check($1,$3);
+                    is_declaration = is_decl_temp;
+                }
+                | id EQ float_constant{
+                    type_check($1,$3);
+                    is_declaration = is_decl_temp;
+                }
+                ;
 shorthand_exp: id PLUSEQ assignment_options 
                 | id MINUSEQ assignment_options 
                 | id MULEQ  assignment_options
@@ -179,10 +187,11 @@ shorthand_exp: id PLUSEQ assignment_options
                 ;
                 
 
-assignment_options: int_constant {$$ = $1;} 
+assignment_options: id{$$=$1;}|
+                    int_constant {$$ = $1;} 
                     | float_constant {$$ = $1;}  
                     | id OPEN_SQR_BKT id CLOSE_SQR_BKT 
-                    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT { int array_index = strtol($3,0,10); stEntry* result  = search_recursive($1);  if(array_index > result->array_dimension) yyerror("Array index out of range"); if(array_index < 0) yyerror("Array index cannot be negative");}
+                    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT { int array_index = strtol($3,0,10); stEntry* result  = search_recursive($1);  if(array_index > result->array_dimension) {yyerror("Array index out of range");exit(1);} if(array_index < 0) {yyerror("Array index cannot be negative");exit(1);}};
 
 statement_type: single_statement | block_statement ;
 
@@ -199,7 +208,7 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
                  statement 
                  
                  
-                 CLOSE_BRACE {current_scope = exit_scope();} {if(is_func ==1 && found_ret ==0) yyerror("Function has no return statement"); is_func =0; found_ret =0 ;}
+                 CLOSE_BRACE {current_scope = exit_scope();} {if(is_func ==1 && found_ret ==0) {yyerror("Function has no return statement");exit(1);} is_func =0; found_ret =0 ;};
 
 statement: statement statement_type | ;
 
@@ -211,8 +220,8 @@ exp: exp_type COMMA exp | exp_type;
 
 exp_type: sub_exp | binary_exp;
 
-sub_exp: sub_exp AND sub_exp
-        | sub_exp OR sub_exp
+sub_exp: sub_exp AND sub_exp {type_check($1,$3);}
+        | sub_exp OR sub_exp 
         | NOT sub_exp
         | sub_exp EQEQ sub_exp
         | sub_exp NEQ sub_exp
@@ -248,7 +257,7 @@ int_constant: INTEGER_CONSTANT {int val = strtol(yytext,0,10); insert(constant_t
                                     
 
 
-float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOATING_CONSTANT);$$=$1;};
+float_constant: FLOATING_CONSTANT   {float val = strtof($1,NULL); insert(constant_table,$1, val,FLOAT);$$=$1;};
 
 id: IDENTIFIER {
     //stEntry* is_Present =  search(SYMBOL_TABLE, $1);
@@ -269,7 +278,7 @@ id: IDENTIFIER {
         if(is_Present != NULL && scope_where_lexeme_found == current_scope) {
             printf("Line %3d: ERROR: %s is already declared!\n", yylineno, $1); exit(1);
         } else {
-            insert(SYMBOL_TABLE,$1,INT_MAX,IDENTIFIER);
+                insert(SYMBOL_TABLE,$1,INT_MAX,dtype);
         }
         
     } else {  
@@ -287,26 +296,35 @@ id: IDENTIFIER {
 void yyerror (char const *s) {
     extern int yylineno;
     printf("Error: Line %3d:  %s \n", yylineno, s);
-    exit(1);
  }
 
-bool type_check(char* lexeme, char* lexeme_prime){
+void type_check(char* lexeme, char* lexeme_prime){
     stEntry* entry = search_recursive(lexeme);
     stEntry* entry_prime = search_recursive(lexeme_prime);
-
+    
     if(!entry){
-        if(!(entry = search(constant_table,lexeme))){
-            
-        };
-    }
-
-    if(!entry_prime){
         if(!(entry_prime = search(constant_table,lexeme))){
-            
+            entry_prime = search(constant_table,lexeme);
+            if(entry==NULL){
+                yyerror("Entry not found in constant table");
+                exit(1);
+            }
         };
     }
-
-    return entry->data_type == entry_prime->data_type;
+    
+    if(!entry_prime){
+        entry_prime = search(constant_table,lexeme_prime);
+        if(entry_prime==NULL){
+            yyerror("Entry not found in constant table");
+            exit(1);
+        }
+    }
+    
+    if (entry->data_type != entry_prime->data_type){
+        yyerror("Type mismatch");
+        printf("Mismatch between %d %d. (Refer y.tab.h to know the printed data type variables)\n",entry->data_type,entry_prime->data_type);
+        exit(0);
+    }
 }
 
 int main(int argc, char *argv[])
