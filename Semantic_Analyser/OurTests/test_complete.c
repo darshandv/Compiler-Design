@@ -5,7 +5,7 @@ int add_something (){
     int b = 20;
     int c;
     c = a + b;
-    return c;
+     return c;
 }
 
 int condition(){
@@ -21,6 +21,7 @@ int condition(){
 }
 
 int main(){
+    int arr[15];
     float p = 11.0;
     {   
         float k = 5.0;
@@ -29,5 +30,5 @@ int main(){
             condition();
         }
     }
-    return 0;
+    // return 0;
 }

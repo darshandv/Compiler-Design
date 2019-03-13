@@ -189,7 +189,7 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
                  statement 
                  
                  
-                 CLOSE_BRACE {if(is_func ==1 && found_ret ==0 && is_func_scope == SYMBOL_TABLE_INDEX.parent ) {yyerror("Function has no return statement");exit(1);} is_func =0; found_ret =0 ;current_scope = exit_scope();} ;
+                 CLOSE_BRACE {if(is_func ==1 && found_ret ==0 && is_func_scope == SYMBOL_TABLE_INDEX.parent ) {yyerror("Function has no return statement");exit(1);} if(found_ret) is_func =0; found_ret =0 ;current_scope = exit_scope();} ;
 
 statement: statement statement_type | ;
 
