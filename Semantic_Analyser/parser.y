@@ -221,24 +221,24 @@ exp: exp_type COMMA exp | exp_type;
 exp_type: sub_exp | binary_exp;
 
 sub_exp: sub_exp AND sub_exp {type_check($1,$3);}
-        | sub_exp OR sub_exp 
-        | NOT sub_exp
-        | sub_exp EQEQ sub_exp
-        | sub_exp NEQ sub_exp
-        | sub_exp GT sub_exp 
-        | sub_exp LT sub_exp
-        | sub_exp GE sub_exp
-        | sub_exp LE sub_exp
+        | sub_exp OR sub_exp {type_check($1,$3);}
+        | NOT sub_exp {type_check($1,$3);}
+        | sub_exp EQEQ sub_exp {type_check($1,$3);}
+        | sub_exp NEQ sub_exp {type_check($1,$3);}
+        | sub_exp GT sub_exp {type_check($1,$3);}
+        | sub_exp LT sub_exp {type_check($1,$3);}
+        | sub_exp GE sub_exp {type_check($1,$3);}
+        | sub_exp LE sub_exp {type_check($1,$3);}
         | arithmetic_exp 
 		;
  
-arithmetic_exp: arithmetic_exp PLUS arithmetic_exp
-                | arithmetic_exp MINUS arithmetic_exp 
-		        | arithmetic_exp MUL arithmetic_exp	
-                | arithmetic_exp DIV arithmetic_exp
+arithmetic_exp: arithmetic_exp PLUS arithmetic_exp {type_check($1,$3);}
+                | arithmetic_exp MINUS arithmetic_exp {type_check($1,$3);}
+		        | arithmetic_exp MUL arithmetic_exp	{type_check($1,$3);}
+                | arithmetic_exp DIV arithmetic_exp {type_check($1,$3);}
                 | assignment_options
                 ;
-binary_exp: binary_exp BIT_AND binary_exp
+binary_exp: binary_exp BIT_AND binary_exp 
             | binary_exp BIT_OR binary_exp 
             | binary_exp BIT_XOR binary_exp 
             | binary_exp LSHIFT binary_exp	
