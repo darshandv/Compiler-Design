@@ -103,7 +103,7 @@ function: function_decl | function_def;
 
 function_decl: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON ;
 
-function_def: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS  {is_func =1;} block_statement ;
+function_def: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS  {is_func =1;is_declaration = 0;} block_statement ;
                                                                                     
 
 
