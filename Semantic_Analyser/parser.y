@@ -102,19 +102,14 @@ comments: SINGLE_LINE | MULTI_LINE;
 
 function: function_decl | function_def;
 
-function_decl: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS SEMICOLON {is_declaration = 0;};
+function_decl: datatype id OPEN_PARENTHESIS CLOSE_PARENTHESIS SEMICOLON {is_declaration = 0;};
 
-function_def: datatype id OPEN_PARENTHESIS args CLOSE_PARENTHESIS  {is_func =1;is_func_scope = current_scope; is_declaration = 0;} block_statement ;
+function_def: datatype id OPEN_PARENTHESIS CLOSE_PARENTHESIS  {is_func =1;is_func_scope = current_scope; is_declaration = 0;} block_statement ;
                                                                                     
 
 
-args: args COMMA args_def |
-      args_def |
-      ;
 
-args_def: datatype id;
 
-args_call_def: id COMMA args_call_def | id |  int_constant |; 
 
 declaration: datatype declaration_list SEMICOLON {is_declaration = 0;};
 declaration_list: declaration_list COMMA decl | decl;
@@ -186,7 +181,7 @@ single_statement: if_statement | while_statement | return {found_ret =1;} | BREA
 
 return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON | RETURN arithmetic_exp SEMICOLON;
 
-function_call: id OPEN_PARENTHESIS args_call_def CLOSE_PARENTHESIS ;
+function_call: id OPEN_PARENTHESIS  CLOSE_PARENTHESIS ;
 
 block_statement: OPEN_BRACE {current_scope = create_new_scope();}
 

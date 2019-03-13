@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-int a() {
+int a(int b) {
     return 0;
 }
 
 int main() {
-    b();
+    a(5);
     return 0;
 }

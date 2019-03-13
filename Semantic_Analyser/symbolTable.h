@@ -246,11 +246,11 @@ void display_symbol_table(stEntry** hash_table_ptr)
 	int i;
 	stEntry* traverser;
 
-	print_dashes(100);
+	print_dashes(70);
 
-  printf(" %-20s %-20s %-20s %-20s %-20s\n","lexeme","data-type","array_dimension","num_params","value");
+  printf(" %-20s %-20s %-20s\n","lexeme","data-type","array_dimension");
 
-	print_dashes(100);
+	print_dashes(70);
 
 	for( i=0; i < HASH_TABLE_SIZE; i++)
 	{
@@ -259,13 +259,13 @@ void display_symbol_table(stEntry** hash_table_ptr)
 		{
 			printf(" %-20s %-20d %-20d ", traverser->lexeme, traverser->data_type, traverser->array_dimension);
 
-			printf(" %-20d", traverser->num_params);
+			// printf(" %-20d", traverser->num_params);
 
-			if(traverser->value == INT_MAX)
-				printf("0");
-			else 
-				printf("%f", traverser->value);
-			int j;
+			// if(traverser->value == INT_MAX)
+			// 	printf("0");
+			// else 
+			// 	printf("%f", traverser->value);
+			// int j;
 			// for(j=0; j < traverser->num_params; j++)
 			// printf(" %d",traverser->parameter_list[j]);
 			printf("\n");
@@ -274,7 +274,7 @@ void display_symbol_table(stEntry** hash_table_ptr)
 		}
 	}
 
-	print_dashes(100);
+	print_dashes(70);
 
 }
 
