@@ -1,0 +1,35 @@
+Cd Lab if else logic
+
+if() {
+} else {}
+
+If (T) goto l1
+goto l2
+
+l1:
+.
+.
+.
+goto l3
+
+l2:
+.
+.
+.
+l3:
+
+
+
+
+Logic just for if:
+if(T) goto l1
+goto l2
+
+l1:
+.
+.
+.
+l2:
+.
+.
+.

@@ -39,6 +39,7 @@ void type_check(char* , char* );
 /* Headers for ICG Functions and variables */
 #include "icg.cpp"
 void gencode(string s);
+string print_label();
 string print_element(pair<string,int> p);
 vector<string> ICG;
 
@@ -199,7 +200,7 @@ single_statement: if_statement | while_statement | return {found_ret =1;} | BREA
 
 return: RETURN SEMICOLON { string instruction = "return"; gencode(instruction);} | RETURN id SEMICOLON { string instruction = "return\n"; gencode(instruction);} | RETURN int_constant SEMICOLON { string instruction = "return\n"; gencode(instruction);} | RETURN arithmetic_exp SEMICOLON { string instruction = "return"; gencode(instruction);}
 
-function_call: id OPEN_PARENTHESIS  CLOSE_PARENTHESIS {string instruction = "goto " + string($1); gencode(instruction);};
+function_call: id OPEN_PARENTHESIS  CLOSE_PARENTHESIS {string instruction = "call " + string($1); gencode(instruction);};
 
 block_statement: OPEN_BRACE {current_scope = create_new_scope();}
 
@@ -211,7 +212,7 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
 
 statement: statement statement_type | ;
 
-if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter) +"\nL"+ to_string(l_counter);gencode(instruction);l_counter++;} block_statement %prec IFX 
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction); gencode(print_label());} block_statement %prec IFX 
 ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;
@@ -510,6 +511,11 @@ string print_element(pair<string, int> p) {
         return p.first;
     return (p.first + to_string(p.second)); 
 
+}
+
+string print_label() {
+    string label = "L" + to_string(l_counter++) + ":";
+    return label;
 }
 
 void gencode(string s) {
