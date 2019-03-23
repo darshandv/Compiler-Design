@@ -197,7 +197,7 @@ statement_type: single_statement | block_statement ;
 single_statement: if_statement | while_statement | return {found_ret =1;} | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);}} | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
-return: RETURN SEMICOLON | RETURN id SEMICOLON | RETURN int_constant SEMICOLON | RETURN arithmetic_exp SEMICOLON;
+return: RETURN SEMICOLON { string instruction = "return"; gencode(instruction);} | RETURN id SEMICOLON { string instruction = "return\n"; gencode(instruction);} | RETURN int_constant SEMICOLON { string instruction = "return\n"; gencode(instruction);} | RETURN arithmetic_exp SEMICOLON { string instruction = "return"; gencode(instruction);}
 
 function_call: id OPEN_PARENTHESIS  CLOSE_PARENTHESIS {string instruction = "goto " + string($1); gencode(instruction);};
 
