@@ -3,3 +3,5 @@ a.out
 *.txt
 y.tab.c
 y.tab.h
+*/.gdb_history
+/.vscode
