@@ -19,6 +19,7 @@ using namespace std;
 extern stEntry** constant_table;
 int che = 0;
 
+char tmp_str[20];
 int dtype = 0;
 int in_loop = 0;
 int is_declaration  =0 ;
@@ -42,6 +43,7 @@ void gencode(string s);
 string print_label();
 string print_element(pair<string,int> p);
 vector<string> ICG;
+stack<int> if_stack;
 
 
 %}
@@ -212,8 +214,20 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
 
 statement: statement statement_type | ;
 
-if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction); string next_if = "goto L" + to_string(l_counter+1); gencode(next_if);  gencode(print_label());} block_statement  {gencode(print_label());}%prec IFX 
-;
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS ifTAC block_statement {int correct_label = if_stack.top(); if_stack.pop(); string instruction = "L" + to_string(correct_label) + ":"; gencode(instruction);};
+
+ifTAC:
+    {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();
+    string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction);
+    string next_if = "goto L" + to_string(l_counter+1);
+    int return_val = l_counter +1;
+    gencode(next_if); 
+    gencode(print_label());
+    l_counter++;
+    if_stack.push(return_val);
+    }
+
+
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;
 

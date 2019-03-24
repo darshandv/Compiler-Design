@@ -15,6 +15,11 @@ int main() {
     if(a > b)  
     {
         int inside_if = 0;
+
+        if(e > 3) {
+            int in_in = 1;
+        }
+        int in_out = 2;
     }
     int hello = 2;
     int blah;
