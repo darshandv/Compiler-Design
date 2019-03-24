@@ -192,8 +192,8 @@ shorthand_exp: id PLUSEQ assignment_options
 assignment_options: id{$$=$1; icg_stack.push({$1,-1});}|
                     int_constant {$$ = $1; icg_stack.push({$1,-1});} 
                     | float_constant {$$ = $1; icg_stack.push({$1,-1});}  
-                    | id OPEN_SQR_BKT id CLOSE_SQR_BKT 
-                    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT { int array_index = strtol($3,0,10); stEntry* result  = search_recursive($1);  if(array_index > result->array_dimension) {yyerror("Array index out of range");exit(1);} if(array_index < 0) {yyerror("Array index cannot be negative");exit(1);}};
+                    | id OPEN_SQR_BKT id CLOSE_SQR_BKT {++t_counter; string instruction  = "T" + to_string(t_counter) + " = "+ string($1) + "[" + string($3) + "]"; gencode(instruction);  ;icg_stack.push({"T", t_counter});}
+                    | id OPEN_SQR_BKT int_constant CLOSE_SQR_BKT {++t_counter; string instruction  = "T" + to_string(t_counter) + " = "+ string($1) + "[" + string($3) + "]"; gencode(instruction);  ;icg_stack.push({"T", t_counter}); int array_index = strtol($3,0,10); stEntry* result  = search_recursive($1);  if(array_index > result->array_dimension) {yyerror("Array index out of range");exit(1);} if(array_index < 0) {yyerror("Array index cannot be negative");exit(1);}};
 
 statement_type: single_statement | block_statement ;
 
