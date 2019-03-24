@@ -16,7 +16,10 @@ int main() {
         if(a == 4) {
             int in_in_if = 4;
         }
+        else {
         int in_out_if = 5;
+        }
+        int in_neutral = 7;
     }
     else {
         f2();

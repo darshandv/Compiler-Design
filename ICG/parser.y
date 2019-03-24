@@ -214,19 +214,33 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
 
 statement: statement statement_type | ;
 
-if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS ifTAC block_statement {int correct_label = if_stack.top(); if_stack.pop(); string instruction = "L" + to_string(correct_label) + ":"; gencode(instruction);};
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS ifTAC block_statement {int correct_label = if_stack.top(); if_stack.pop(); string instruction = "L" + to_string(correct_label) + ":"; gencode(instruction);}
+            | IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS ifTAC block_statement ELSE ElseTAC block_statement  {int correct_label = if_stack.top(); if_stack.pop(); string instruction = "L" + to_string(correct_label) + ":"; gencode(instruction);};
 
 ifTAC:
     {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();
+    string not_exp = print_element(op1) + " = NOT " + print_element(op1);
+    gencode(not_exp); 
     string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction);
-    string next_if = "goto L" + to_string(l_counter+1);
-    int return_val = l_counter +1;
-    gencode(next_if); 
-    gencode(print_label());
+    if_stack.push(l_counter);
     l_counter++;
-    if_stack.push(return_val);
-    }
+    };  
 
+ElseTAC:
+    {
+        int goto_out_of_block = l_counter;
+        string instruction = "goto L" + to_string(l_counter++);
+        gencode(instruction);
+
+        int correct_label = if_stack.top();
+        if_stack.pop();
+
+        instruction = "L" + to_string(correct_label) + ":"; gencode(instruction);
+
+        if_stack.push(goto_out_of_block);
+
+
+    }
 
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;
