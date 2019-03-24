@@ -212,7 +212,7 @@ block_statement: OPEN_BRACE {current_scope = create_new_scope();}
 
 statement: statement statement_type | ;
 
-if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction); gencode(print_label());} block_statement %prec IFX 
+if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction); string next_if = "goto L" + to_string(l_counter+1); gencode(next_if);  gencode(print_label());} block_statement  {gencode(print_label());}%prec IFX 
 ;
 
 while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;

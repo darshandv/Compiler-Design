@@ -14,7 +14,10 @@ int main() {
     func();
     if(a > b)  
     {
-        int l = 0;
+        int inside_if = 0;
     }
+    int hello = 2;
+    int blah;
+    blah = 1 + 6 * 3  - 2;
     return 0;
 }
