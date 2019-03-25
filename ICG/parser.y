@@ -44,6 +44,7 @@ string print_label();
 string print_element(pair<string,int> p);
 vector<string> ICG;
 stack<int> if_stack;
+stack<int> while_stack;
 
 
 %}
@@ -243,8 +244,30 @@ ElseTAC:
     }
 
 
-while_statement: WHILE OPEN_PARENTHESIS exp CLOSE_PARENTHESIS {in_loop =1;}statement_type {in_loop = 0;} ;
+while_statement: WHILE {gencode(print_label());} OPEN_PARENTHESIS exp CLOSE_PARENTHESIS whileTAC block_statement endofWhileTAC ;
 
+whileTAC:
+    {pair <string,int> op1;
+    op1 = icg_stack.top();
+    icg_stack.pop();
+    string not_exp = print_element(op1) + " = NOT " + print_element(op1);
+    gencode(not_exp); 
+    string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction);
+    while_stack.push(l_counter);
+    l_counter++;
+    in_loop =1;
+    }; 
+
+endofWhileTAC:
+    {
+    int correct_label = while_stack.top();
+    while_stack.pop();
+    string instruction = "goto L" + to_string(correct_label-1);
+    gencode(instruction);
+    instruction = "L" + to_string(correct_label) + ":";
+    gencode(instruction);
+    in_loop = 0;
+    }
 exp: exp_type COMMA exp {$$=$3;} | exp_type {$$ = $1;};
 
 exp_type: sub_exp {$$ = $1;}| binary_exp;
