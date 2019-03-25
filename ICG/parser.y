@@ -198,7 +198,7 @@ assignment_options: id{$$=$1; icg_stack.push({$1,-1});}|
 
 statement_type: single_statement | block_statement ;
 
-single_statement: if_statement | while_statement | return {found_ret =1;} | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);}} | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} } |  SEMICOLON | function_call SEMICOLON | 
+single_statement: if_statement | while_statement | return {found_ret =1;} | BREAK SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal break statement, not in loop!\n", yylineno); exit(1);} int out_of_while_label = while_stack.top(); string instruction = "goto L" + to_string(out_of_while_label); gencode(instruction);} | CONTINUE SEMICOLON {if(in_loop == 0) {printf("Line %3d: Illegal continue statement, not in loop!\n", yylineno); exit(1);} int while_label = while_stack.top() - 1; string instruction = "goto L" + to_string(while_label); gencode(instruction); } |  SEMICOLON | function_call SEMICOLON | 
                     function | declaration | preprocessor_directive | comments | assignment_exp SEMICOLON | inc_dec_exp SEMICOLON | shorthand_exp SEMICOLON;
 
 return: RETURN SEMICOLON { string instruction = "return"; gencode(instruction);} | RETURN id SEMICOLON { string instruction = "return\n"; gencode(instruction);} | RETURN int_constant SEMICOLON { string instruction = "return\n"; gencode(instruction);} | RETURN arithmetic_exp SEMICOLON { string instruction = "return"; gencode(instruction);}
