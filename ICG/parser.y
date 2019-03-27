@@ -153,7 +153,7 @@ type: INT {dtype = INT;}
 assignment_exp: id EQ exp {
                         is_declaration = is_decl_temp;
                         pair <string,int> op1;
-                        op1 = icg_stack.top();check();
+                        op1 = icg_stack.top();
                         icg_stack.pop();
                         string instruction = string($1) + " = " + print_element(op1);
                         gencode(instruction);
@@ -219,7 +219,7 @@ if_statement: IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS ifTAC block_statement {i
             | IF OPEN_PARENTHESIS exp CLOSE_PARENTHESIS ifTAC block_statement ELSE ElseTAC block_statement  {int correct_label = if_stack.top(); if_stack.pop(); string instruction = "L" + to_string(correct_label) + ":"; gencode(instruction);};
 
 ifTAC:
-    {pair <string,int> op1;op1 = icg_stack.top();check();icg_stack.pop();
+    {pair <string,int> op1;op1 = icg_stack.top();icg_stack.pop();
     string not_exp = print_element(op1) + " = NOT " + print_element(op1);
     gencode(not_exp); 
     string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction);
@@ -248,14 +248,14 @@ while_statement: WHILE {gencode(print_label());} OPEN_PARENTHESIS exp CLOSE_PARE
 
 whileTAC:
     {pair <string,int> op1;
-    op1 = icg_stack.top();check();
+    op1 = icg_stack.top();
     icg_stack.pop();
     string not_exp = print_element(op1) + " = NOT " + print_element(op1);
     gencode(not_exp); 
     string instruction = "if " + print_element(op1) + " goto " + "L"+ to_string(l_counter); gencode(instruction);
     while_stack.push(l_counter);
     l_counter++;
-    in_loop =1;
+    in_loop += 1;
     }; 
 
 endofWhileTAC:
@@ -266,7 +266,7 @@ endofWhileTAC:
     gencode(instruction);
     instruction = "L" + to_string(correct_label) + ":";
     gencode(instruction);
-    in_loop = 0;
+    in_loop -= 1;
     }
 exp: exp_type COMMA exp {$$=$3;} | exp_type {$$ = $1;};
 
@@ -274,9 +274,9 @@ exp_type: sub_exp {$$ = $1;}| binary_exp;
 
 sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " && " + print_element(op1);
@@ -284,9 +284,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         }
         | sub_exp OR sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " || " + print_element(op1);
@@ -295,9 +295,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         | NOT sub_exp 
         | sub_exp EQEQ sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " == " + print_element(op1);
@@ -305,9 +305,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         }
         | sub_exp NEQ sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " != " + print_element(op1);
@@ -315,9 +315,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         }
         | sub_exp GT sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " > " + print_element(op1);
@@ -325,9 +325,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         }
         | sub_exp LT sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " < " + print_element(op1);
@@ -335,9 +335,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         }
         | sub_exp GE sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " >= " + print_element(op1);
@@ -345,9 +345,9 @@ sub_exp: sub_exp AND sub_exp {//type_check($1,$3);
         }
         | sub_exp LE sub_exp {//type_check($1,$3);
         pair<string,int> op1, op2;
-        op1 = icg_stack.top();check();
+        op1 = icg_stack.top();
         icg_stack.pop();
-        op2 = icg_stack.top();check();
+        op2 = icg_stack.top();
         icg_stack.pop();
         icg_stack.push({"T", ++t_counter});
         string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " <= " + print_element(op1);
@@ -362,9 +362,9 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp { //type_check($1,$3);
                 //int  result = (int)(val1->value + val2->value); 
                 // char tmp[10]; $$ = my_itoa(result, tmp);
                 pair<string,int> op1, op2;
-                op1 = icg_stack.top();check();
+                op1 = icg_stack.top();
                 icg_stack.pop();
-                op2 = icg_stack.top();check();
+                op2 = icg_stack.top();
                 icg_stack.pop();
                 icg_stack.push({"T", ++t_counter});
                 string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " + " + print_element(op1);
@@ -376,9 +376,9 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp { //type_check($1,$3);
                  //int  result = (int)(val1->value - val2->value); 
                  //char tmp[10]; $$ = my_itoa(result, tmp);
                 pair<string,int> op1, op2;
-                op1 = icg_stack.top();check();
+                op1 = icg_stack.top();
                 icg_stack.pop();
-                op2 = icg_stack.top();check();
+                op2 = icg_stack.top();
                 icg_stack.pop();
                 icg_stack.push({"T", ++t_counter});
                 string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " - " + print_element(op1);
@@ -390,9 +390,9 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp { //type_check($1,$3);
                 //int  result = (int)(val1->value * val2->value);  
                 //char tmp[10]; $$ = my_itoa(result, tmp);
                 pair<string,int> op1, op2;
-                op1 = icg_stack.top();check();
+                op1 = icg_stack.top();
                 icg_stack.pop();
-                op2 = icg_stack.top();check();
+                op2 = icg_stack.top();
                 icg_stack.pop();
                 icg_stack.push({"T", ++t_counter});
                 string instruction = "T" + to_string(t_counter) + " = " + print_element(op1) + " * " + print_element(op2);
@@ -404,9 +404,9 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp { //type_check($1,$3);
                 //int  result = (int)(val1->value / val2->value);  
                 //char tmp[10]; $$ = my_itoa(result, tmp);
                 pair<string,int> op1, op2;
-                op1 = icg_stack.top();check();
+                op1 = icg_stack.top();
                 icg_stack.pop();
-                op2 = icg_stack.top();check();
+                op2 = icg_stack.top();
                 icg_stack.pop();
                 icg_stack.push({"T", ++t_counter});
                 string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " / " + print_element(op1);
@@ -417,9 +417,9 @@ arithmetic_exp: arithmetic_exp PLUS arithmetic_exp { //type_check($1,$3);
                 ;
 binary_exp: binary_exp BIT_AND binary_exp {//type_check($1,$3);
             pair<string,int> op1, op2;
-            op1 = icg_stack.top();check();
+            op1 = icg_stack.top();
             icg_stack.pop();
-            op2 = icg_stack.top();check();
+            op2 = icg_stack.top();
             icg_stack.pop();
             icg_stack.push({"T", ++t_counter});
             string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " & " + print_element(op1);
@@ -427,9 +427,9 @@ binary_exp: binary_exp BIT_AND binary_exp {//type_check($1,$3);
             }
             | binary_exp BIT_OR binary_exp {//type_check($1,$3);
             pair<string,int> op1, op2;
-            op1 = icg_stack.top();check();
+            op1 = icg_stack.top();
             icg_stack.pop();
-            op2 = icg_stack.top();check();
+            op2 = icg_stack.top();
             icg_stack.pop();
             icg_stack.push({"T", ++t_counter});
             string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " | " + print_element(op1);
@@ -437,9 +437,9 @@ binary_exp: binary_exp BIT_AND binary_exp {//type_check($1,$3);
             }
             | binary_exp BIT_XOR binary_exp {//type_check($1,$3);
             pair<string,int> op1, op2;
-            op1 = icg_stack.top();check();
+            op1 = icg_stack.top();
             icg_stack.pop();
-            op2 = icg_stack.top();check();
+            op2 = icg_stack.top();
             icg_stack.pop();
             icg_stack.push({"T", ++t_counter});
             string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " ^ " + print_element(op1);
@@ -447,9 +447,9 @@ binary_exp: binary_exp BIT_AND binary_exp {//type_check($1,$3);
             }
             | binary_exp LSHIFT binary_exp	{//type_check($1,$3);
             pair<string,int> op1, op2;
-            op1 = icg_stack.top();check();
+            op1 = icg_stack.top();
             icg_stack.pop();
-            op2 = icg_stack.top();check();
+            op2 = icg_stack.top();
             icg_stack.pop();
             icg_stack.push({"T", ++t_counter});
             string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " << " + print_element(op1);
@@ -457,9 +457,9 @@ binary_exp: binary_exp BIT_AND binary_exp {//type_check($1,$3);
             }
             | binary_exp RSHIFT binary_exp {//type_check($1,$3);
             pair<string,int> op1, op2;
-            op1 = icg_stack.top();check();
+            op1 = icg_stack.top();
             icg_stack.pop();
-            op2 = icg_stack.top();check();
+            op2 = icg_stack.top();
             icg_stack.pop();
             icg_stack.push({"T", ++t_counter});
             string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " >> " + print_element(op1);
@@ -467,9 +467,9 @@ binary_exp: binary_exp BIT_AND binary_exp {//type_check($1,$3);
             }
             | binary_exp MOD binary_exp {//type_check($1,$3);
             pair<string,int> op1, op2;
-            op1 = icg_stack.top();check();
+            op1 = icg_stack.top();
             icg_stack.pop();
-            op2 = icg_stack.top();check();
+            op2 = icg_stack.top();
             icg_stack.pop();
             icg_stack.push({"T", ++t_counter});
             string instruction = "T" + to_string(t_counter) + " = " + print_element(op2) + " % " + print_element(op1);
@@ -574,7 +574,11 @@ string print_label() {
 void gencode(string s) {
     std:: string insn; // instruction
     
-    insn = to_string(TAC_lineno++) + string(": ") + s;
+    insn = to_string(TAC_lineno++) + string(": ");
+    while(insn.length() < 6) {
+        insn = insn + " ";
+    }
+    insn = insn + s;
     ICG.push_back(insn);
 }
 
